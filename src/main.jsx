@@ -95,7 +95,7 @@ function Root() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ToastProvider duration={4000} maxToasts={4}>
-      <BrowserRouter>
+    <BrowserRouter basename="/app">
         <Root />
       </BrowserRouter>
     </ToastProvider>
