@@ -306,7 +306,7 @@ export default function RegistrationPage({ onSuccess }) {
           <p className="text-center text-sm" style={{ color: "#999999" }}>
             Already have an account?{" "}
             <a
-              href="/"
+              href="/app/"
               className="font-medium transition"
               style={{ color: "#C9A85C" }}
               onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}

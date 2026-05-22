@@ -251,7 +251,7 @@ export default function ResetPasswordPage() {
             <p className="text-sm" style={{ color: "#999999" }}>
               Remembered your password?{" "}
               <a
-                href="/"
+                href="/app/"
                 className="font-medium transition"
                 style={{ color: "#C9A85C" }}
                 onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}

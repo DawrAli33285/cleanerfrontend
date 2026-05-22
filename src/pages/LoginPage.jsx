@@ -141,7 +141,7 @@ export default function LoginPage({ onLogin }) {
 
             <div className="text-center flex flex-col">
               <a
-                href="/reset"
+                href="/app/reset"
                 className="text-sm transition"
                 style={{ color: "#8a7740" }}
                 
@@ -152,7 +152,7 @@ export default function LoginPage({ onLogin }) {
               </a>
               
               <a
-                href="/register"
+                href="/app/register"
                 className="text-sm transition"
                 style={{ color: "#8a7740" }}
                 

@@ -45,7 +45,7 @@ export default function AdminLoginPage({ onLogin }) {
         onLogin({ token: data.token, partner: data.admin });
       }
 
-      navigate("/admin/dashboard");
+      navigate("/app/admin/dashboard");
     } catch (axiosErr) {
       const msg = axiosErr?.response?.data?.message || "Login failed. Please try again.";
       setError(msg);
@@ -165,7 +165,7 @@ export default function AdminLoginPage({ onLogin }) {
           <p className="mt-6 text-center text-sm" style={{ color: "#666666" }}>
             Don't have an account?{" "}
             <Link
-              to="/admin/register"
+              to="/app/admin/register"
               className="font-medium transition-colors"
               style={{ color: "#C9A85C" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#d4b56b")}
