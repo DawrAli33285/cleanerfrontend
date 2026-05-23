@@ -271,7 +271,7 @@ export default function RegistrationPage({ onSuccess }) {
               />
               <label htmlFor="agree" className="text-sm select-none" style={{ color: "#cccccc" }}>
                 I agree to the{" "}
-                <a href="/terms" style={{ color: "#C9A85C" }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}>
+                <a href="/app/terms" style={{ color: "#C9A85C" }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}>
                   Terms
                 </a>{" "}
                 and{" "}
