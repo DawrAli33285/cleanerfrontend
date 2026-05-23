@@ -15,6 +15,8 @@ import AdminDashboard from './pages/AdminDashboardPage.jsx'
 
 import { ToastProvider } from './components/toast.jsx'
 import TermsAndConditions from './pages/TermnsAndConditions.jsx'
+import AccountPage from './pages/PartnerAccountPage.jsx'
+import ContactForm from './pages/ParnterSupportPage.jsx'
 
 function Root() {
   // ── Partner auth ────────────────────────────────────────────────────────────
@@ -66,6 +68,10 @@ function Root() {
       <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
       <Route path="/register" element={<RegistrationPage />} />
       <Route path="/reset" element={<ResetPasswordPage />} />
+      <Route path="/support" element={<ContactForm />} />
+      <Route path='/account' element={ token
+      ? <AccountPage token={token} onLogout={handleLogout} />
+      : <Navigate to="/" replace />}/>
       <Route
         path="/dashboard"
         element={

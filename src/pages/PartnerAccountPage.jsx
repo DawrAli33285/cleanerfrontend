@@ -1,22 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../baseurl";
 import { useToast } from "../components/toast";
-import { useNavigate } from "react-router-dom";
 
-// ─── Shared Design Tokens ────────────────────────────────────────────────────
-const gold = "#C9A85C";
-const goldHover = "#d4b56b";
-const bg = "#111111";
-const surface = "#1a1a1a";
-const surfaceMid = "#212121";
-const border = "#2a2a2a";
-const borderGold = "rgba(201,168,92,0.35)";
-const textPrimary = "#f0f0f0";
-const textSecondary = "#999999";
-const textMuted = "#666666";
-
-// ─── Logo ─────────────────────────────────────────────────────────────────────
 function Logo({ size = 64 }) {
     return (
       <div className="flex items-center gap-3">
@@ -25,674 +11,411 @@ function Logo({ size = 64 }) {
       </div>
     );
   }
-// ─── Status Badge ─────────────────────────────────────────────────────────────
-const STATUS_STYLES = {
-    pending_approval: { bg: "rgba(201,168,92,0.13)", color: gold, border: "rgba(201,168,92,0.4)", label: "Pending Approval" },
-    approved:         { bg: "rgba(216,201,138,0.13)", color: "#e6d89b", border: "rgba(216,201,138,0.4)", label: "Approved" },
-    completed:        { bg: "rgba(100,200,120,0.1)",  color: "#7dd4a0", border: "rgba(100,200,120,0.35)", label: "Completed" },
-    denied:           { bg: "rgba(224,85,85,0.1)",    color: "#e05555", border: "rgba(224,85,85,0.35)",  label: "Denied" },
-  };
+  
 
-
-function StatusBadge({ status }) {
-  const s = STATUS_STYLES[status] || { bg: "rgba(255,255,255,0.05)", color: "#aaa", border: border, label: status };
+function InputField({ label, name, type = "text", value, onChange, placeholder, disabled, hint }) {
   return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", borderRadius: 999,
-      border: `1px solid ${s.border}`, backgroundColor: s.bg, color: s.color,
-      padding: "3px 10px", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap",
-      fontFamily: "monospace", letterSpacing: "0.04em",
-    }}>
-      {s.label}
-    </span>
-  );
-}
-
-// ─── Pill Tab ─────────────────────────────────────────────────────────────────
-function Tab({ label, active, onClick, count }) {
-  return (
-    <button onClick={onClick} style={{
-      padding: "7px 18px", borderRadius: 6, fontSize: 13, fontWeight: 500, cursor: "pointer",
-      border: `1px solid ${active ? borderGold : border}`,
-      backgroundColor: active ? "rgba(201,168,92,0.1)" : "transparent",
-      color: active ? gold : textSecondary, transition: "all .2s",
-      fontFamily: "'DM Mono', monospace",
-    }}>
-      {label}{count !== undefined && <span style={{ marginLeft: 6, opacity: 0.6, fontSize: 11 }}>({count})</span>}
-    </button>
-  );
-}
-
-// ─── Modal Wrapper ────────────────────────────────────────────────────────────
-function Modal({ title, subtitle, onClose, children }) {
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 60, display: "flex",
-      alignItems: "center", justifyContent: "center", padding: 16,
-      backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)",
-    }} onClick={onClose}>
-      <div style={{
-        backgroundColor: surface, border: `1px solid ${borderGold}`, borderRadius: 14,
-        width: "100%", maxWidth: 540, maxHeight: "90vh", display: "flex", flexDirection: "column",
-        boxShadow: `0 0 60px rgba(201,168,92,0.08)`,
-      }} onClick={e => e.stopPropagation()}>
-        <div style={{ padding: "24px 28px 16px", borderBottom: `1px solid ${border}`, flexShrink: 0 }}>
-          <div style={{ color: textPrimary, fontSize: 18, fontWeight: 600, fontFamily: "'Cormorant Garamond', serif" }}>{title}</div>
-          {subtitle && <div style={{ color: textSecondary, fontSize: 12.5, marginTop: 3 }}>{subtitle}</div>}
-        </div>
-        <div style={{ overflowY: "auto", flex: 1, padding: "20px 28px 28px" }}>{children}</div>
-      </div>
+    <div className="space-y-1.5">
+      <label className="block text-sm font-medium text-white">{label}</label>
+      {hint && <p className="text-xs" style={{ color: "#999999" }}>{hint}</p>}
+      <input
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="w-full h-11 px-3 rounded-md text-white border focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          backgroundColor: disabled ? "rgba(17,17,17,0.5)" : "#111111",
+          borderColor: "#2a2a2a",
+        }}
+        onFocus={(e) => !disabled && (e.target.style.borderColor = "#C9A85C")}
+        onBlur={(e) => (e.target.style.borderColor = "#2a2a2a")}
+      />
     </div>
   );
 }
 
-// ─── Form Field ───────────────────────────────────────────────────────────────
-function Field({ label, children }) {
+function SectionCard({ title, description, children, accent }) {
   return (
-    <div style={{ marginBottom: 14 }}>
-      <label style={{ display: "block", color: textSecondary, fontSize: 11.5, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6, fontFamily: "monospace" }}>{label}</label>
-      {children}
-    </div>
-  );
-}
-
-const inputStyle = {
-  width: "100%", height: 42, padding: "0 12px", borderRadius: 7,
-  backgroundColor: bg, border: `1px solid ${border}`, color: textPrimary,
-  fontSize: 13.5, outline: "none", boxSizing: "border-box",
-};
-
-const selectStyle = { ...inputStyle, appearance: "none" };
-
-// ─── Action Button ────────────────────────────────────────────────────────────
-function ActionBtn({ onClick, color = gold, hoverColor = goldHover, textColor = "#000", children, disabled, style = {} }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <button onClick={onClick} disabled={disabled}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+    <section
+      className="rounded-xl border overflow-hidden"
       style={{
-        backgroundColor: hov ? hoverColor : color, color: textColor,
-        border: "none", borderRadius: 7, padding: "8px 16px",
-        fontSize: 12.5, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1, transition: "all .2s", ...style,
-      }}>{children}</button>
-  );
-}
-
-function GhostBtn({ onClick, children, danger, style = {} }) {
-  const [hov, setHov] = useState(false);
-  const c = danger ? (hov ? "#ff6b6b" : "#e05555") : (hov ? gold : textSecondary);
-  return (
-    <button onClick={onClick}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        backgroundColor: "transparent", color: c,
-        border: `1px solid ${hov ? (danger ? "#e05555" : borderGold) : border}`,
-        borderRadius: 7, padding: "8px 16px", fontSize: 12.5, fontWeight: 500,
-        cursor: "pointer", transition: "all .2s", ...style,
-      }}>{children}</button>
-  );
-}
-
-// ─── Confirm Delete Modal ─────────────────────────────────────────────────────
-function ConfirmDeleteModal({ partner, onConfirm, onClose, loading }) {
-  return (
-    <Modal title="Delete Partner" subtitle="This action cannot be undone." onClose={onClose}>
-      <p style={{ color: textSecondary, fontSize: 13.5, lineHeight: 1.6, marginBottom: 24 }}>
-        You are about to permanently delete partner <strong style={{ color: textPrimary }}>{partner.username}</strong>
-        {partner.email ? ` (${partner.email})` : ""}. All associated requests will be unlinked.
-      </p>
-      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-        <GhostBtn onClick={onClose}>Cancel</GhostBtn>
-        <ActionBtn onClick={onConfirm} disabled={loading} color="#c0392b" hoverColor="#e74c3c" textColor="#fff">
-          {loading ? "Deleting…" : "Delete Partner"}
-        </ActionBtn>
+        backgroundColor: "#1a1a1a",
+        borderColor: "#2a2a2a",
+        borderLeft: accent ? "4px solid #C9A85C" : undefined,
+      }}
+    >
+      <div className="px-6 py-5 border-b" style={{ borderColor: "#2a2a2a" }}>
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
+        {description && (
+          <p className="text-sm mt-0.5" style={{ color: "#999999" }}>
+            {description}
+          </p>
+        )}
       </div>
-    </Modal>
+      <div className="px-6 py-6">{children}</div>
+    </section>
   );
 }
 
-// ─── Edit Partner Modal ───────────────────────────────────────────────────────
-function EditPartnerModal({ partner, token, onClose, onSaved }) {
-  const { success: ok, error: err } = useToast();
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    username: partner.username || "",
-    email: partner.email || "",
-    role: partner.role || "partner",
-    password: "",
-  });
+export default function AccountPage({ token, onLogout }) {
+    console.log(token)
+  const { success: toastSuccess, error: toastError } = useToast();
 
-  const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
+  const [profile, setProfile] = useState({ username: "", email: "", role: "" });
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
-  const handleSave = async () => {
-    const payload = { username: form.username, email: form.email, role: form.role };
-    if (form.password) payload.password = form.password;
-    try {
-      setSaving(true);
-      await axios.put(`${BASE_URL}/admin/partners/${partner.id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      ok("Partner updated", `${form.username} has been updated.`);
-      onSaved();
-      onClose();
-    } catch (e) {
-      err("Update failed", e?.response?.data?.message || "Could not update partner.");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const [profileForm, setProfileForm] = useState({ username: "", email: "" });
+  const [savingProfile, setSavingProfile] = useState(false);
 
-  return (
-    <Modal title="Edit Partner" subtitle={`ID #${partner.id}`} onClose={onClose}>
-      <Field label="Username">
-        <input style={inputStyle} value={form.username} onChange={set("username")} />
-      </Field>
-      <Field label="Email">
-        <input style={inputStyle} type="email" value={form.email} onChange={set("email")} />
-      </Field>
-      <Field label="Role">
-        <select style={selectStyle} value={form.role} onChange={set("role")}>
-          <option value="partner">Partner</option>
-          <option value="admin">Admin</option>
-        </select>
-      </Field>
-      <Field label="New Password (leave blank to keep)">
-        <input style={inputStyle} type="password" placeholder="••••••••" value={form.password} onChange={set("password")} />
-      </Field>
-      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
-        <GhostBtn onClick={onClose}>Cancel</GhostBtn>
-        <ActionBtn onClick={handleSave} disabled={saving}>{saving ? "Saving…" : "Save Changes"}</ActionBtn>
-      </div>
-    </Modal>
-  );
-}
+  const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [savingPw, setSavingPw] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
 
-// ─── Request Detail Modal ─────────────────────────────────────────────────────
-function RequestDetailModal({ request, token, onClose, onStatusChange }) {
-  const { success: ok, error: err } = useToast();
-  const [updating, setUpdating] = useState(false);
-  const [status, setStatus] = useState(request.status);
-
-  const updateStatus = async (newStatus) => {
-    try {
-      setUpdating(true);
-      await axios.patch(`${BASE_URL}/admin/requests/${request.id}/status`, { status: newStatus }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setStatus(newStatus);
-      ok("Status updated", `Request #${request.id} is now ${newStatus}.`);
-      onStatusChange(request.id, newStatus);
-    } catch (e) {
-      err("Update failed", e?.response?.data?.message || "Could not update status.");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const Row = ({ label, value }) => (
-    <div style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: `1px solid ${border}`, alignItems: "flex-start" }}>
-      <div style={{ color: textMuted, fontSize: 11.5, fontFamily: "monospace", letterSpacing: "0.06em", textTransform: "uppercase", minWidth: 130, paddingTop: 1 }}>{label}</div>
-      <div style={{ color: textPrimary, fontSize: 13.5, flex: 1, wordBreak: "break-word" }}>{value || <span style={{ color: textMuted }}>—</span>}</div>
-    </div>
-  );
-
-  return (
-    <Modal title={`Request #${request.id}`} subtitle={`Submitted ${new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`} onClose={onClose}>
-      <Row label="Status" value={<StatusBadge status={status} />} />
-      <Row label="Customer" value={request.customerName} />
-      <Row label="Phone" value={request.customerPhone} />
-      <Row label="Email" value={request.customerEmail} />
-      <Row label="Location" value={request.memorialLocation} />
-      <Row label="Package" value={request.packageType === "basic_annual" ? "Basic Annual — $549" : "Premium Annual — $749"} />
-      <Row label="Price" value={`$${Number(request.packagePrice).toFixed(2)}`} />
-      <Row label="Partner ID" value={request.partnerId ? `#${request.partnerId}` : "—"} />
-      <Row label="Approved By" value={request.approvedBy} />
-      <Row label="Approved At" value={request.approvedAt ? new Date(request.approvedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
-      <Row label="Denied By" value={request.deniedBy} />
-      <Row label="Denied At" value={request.deniedAt ? new Date(request.deniedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
-      {request.notes && <Row label="Notes" value={request.notes} />}
-
-      <div style={{ marginTop: 20 }}>
-        <div style={{ color: textSecondary, fontSize: 11.5, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Update Status</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {["pending_approval", "approved", "completed", "denied"].map(s => (
-            <ActionBtn key={s} disabled={updating || status === s}
-              onClick={() => updateStatus(s)}
-              color={status === s ? "rgba(201,168,92,0.2)" : surfaceMid}
-              hoverColor="rgba(201,168,92,0.15)"
-              textColor={status === s ? gold : textSecondary}
-              style={{ border: `1px solid ${status === s ? borderGold : border}`, fontSize: 12 }}
-            >
-              {STATUS_STYLES[s]?.label || s}
-            </ActionBtn>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
-        <GhostBtn onClick={onClose}>Close</GhostBtn>
-      </div>
-    </Modal>
-  );
-}
-
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ label, value, accent }) {
-  return (
-    <div style={{
-      backgroundColor: surface, border: `1px solid ${border}`,
-      borderLeft: `3px solid ${accent || gold}`,
-      borderRadius: 10, padding: "18px 22px",
-    }}>
-      <div style={{ color: textMuted, fontSize: 11, fontFamily: "monospace", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
-      <div style={{ color: textPrimary, fontSize: 28, fontWeight: 700, fontFamily: "'Cormorant Garamond', serif" }}>{value}</div>
-    </div>
-  );
-}
-
-// ─── Main Admin Dashboard ─────────────────────────────────────────────────────
-export default function AdminDashboard({ token, adminName, onLogout }) {
-  const { success: ok, error: err } = useToast();
-  const navigate = useNavigate();
-  const [tab, setTab] = useState("requests");
-
-  // Read admin email from localStorage as fallback display name
-  const displayName = adminName || (() => {
-    try { return JSON.parse(localStorage.getItem("admin"))?.email || "Admin"; }
-    catch { return "Admin"; }
-  })();
-
-  // Requests state
-  const [requests, setRequests] = useState([]);
-  const [reqLoading, setReqLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-
-  // Filters
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [searchQ, setSearchQ] = useState("");
-
-  // Partners state
-  const [partners, setPartners] = useState([]);
-  const [partLoading, setPartLoading] = useState(true);
-  const [editPartner, setEditPartner] = useState(null);
-  const [deletePartner, setDeletePartner] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
-
-  // ── Fetch Requests ──────────────────────────────────────────────────────────
-  const fetchRequests = useCallback(async () => {
-    try {
-      setReqLoading(true);
-      const { data } = await axios.get(`${BASE_URL}/admin/requests`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRequests(data.requests || []);
-    } catch (e) {
-      err("Error", "Failed to load requests.");
-    } finally {
-      setReqLoading(false);
-    }
+  // Fetch current account info
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoadingProfile(true);
+        const { data } = await axios.get(`${BASE_URL}/getAccount`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const p = data.partner || data;
+        setProfile({ username: p.username || "", email: p.email || "", role: p.role || "partner" });
+        setProfileForm({ username: p.username || "", email: p.email || "" });
+      } catch (err) {
+        toastError("Failed to load", "Could not fetch account details.");
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    fetchProfile();
   }, [token]);
 
-  // ── Fetch Partners ──────────────────────────────────────────────────────────
-  const fetchPartners = useCallback(async () => {
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    if (!profileForm.username.trim()) return toastError("Validation", "Username is required.");
     try {
-      setPartLoading(true);
-      const { data } = await axios.get(`${BASE_URL}/admin/partners`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPartners(data.partners || []);
-    } catch (e) {
-      err("Error", "Failed to load partners.");
+      setSavingProfile(true);
+      await axios.put(
+        `${BASE_URL}/update-account`,
+        { username: profileForm.username, email: profileForm.email },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProfile((prev) => ({ ...prev, username: profileForm.username, email: profileForm.email }));
+      toastSuccess("Profile updated", "Your account information has been saved.");
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Failed to update profile.";
+      toastError("Update failed", msg);
     } finally {
-      setPartLoading(false);
+      setSavingProfile(false);
     }
-  }, [token]);
+  };
 
-  useEffect(() => { fetchRequests(); fetchPartners(); }, []);
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!pwForm.currentPassword) return toastError("Validation", "Current password is required.");
+    if (pwForm.newPassword.length < 8) return toastError("Validation", "New password must be at least 8 characters.");
+    if (pwForm.newPassword !== pwForm.confirmPassword) return toastError("Validation", "New passwords do not match.");
+    try {
+      setSavingPw(true);
+      await axios.put(
+        `${BASE_URL}/password`,
+        { currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toastSuccess("Password changed", "Your password has been updated successfully.");
+      setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Failed to change password.";
+      toastError(msg, "Please try again.");
+    } finally {
+      setSavingPw(false);
+    }
+  };
 
-  // ── Logout — clears adminToken + admin from localStorage ──────────────────
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("admin");
     if (typeof onLogout === "function") onLogout();
-    navigate("/admin");
   };
-
-  // ── Delete Partner ──────────────────────────────────────────────────────────
-  const handleDeletePartner = async () => {
-    try {
-      setDeletingId(deletePartner.id);
-      await axios.delete(`${BASE_URL}/admin/partners/${deletePartner.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      ok("Partner deleted", `${deletePartner.username} has been removed.`);
-      setDeletePartner(null);
-      fetchPartners();
-    } catch (e) {
-      err("Delete failed", e?.response?.data?.message || "Could not delete partner.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  // ── Status update callback ──────────────────────────────────────────────────
-  const handleStatusChange = (id, newStatus) => {
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
-  };
-
-  // ── Filtered requests ───────────────────────────────────────────────────────
-  const filteredRequests = requests.filter(r => {
-    const matchStatus = filterStatus === "all" || r.status === filterStatus;
-    const q = searchQ.toLowerCase();
-    const matchSearch = !q ||
-      r.customerName?.toLowerCase().includes(q) ||
-      r.memorialLocation?.toLowerCase().includes(q) ||
-      r.customerEmail?.toLowerCase().includes(q) ||
-      String(r.id).includes(q);
-    return matchStatus && matchSearch;
-  });
-
-  // ── Stats ────────────────────────────────────────────────────────────────────
-  const stats = {
-    total: requests.length,
-    pending: requests.filter(r => r.status === "pending_approval").length,
-    approved: requests.filter(r => r.status === "approved").length,
-    completed: requests.filter(r => r.status === "completed").length,
-    partners: partners.length,
-    revenue: requests.filter(r => r.status !== "pending_approval").reduce((s, r) => s + Number(r.packagePrice || 0), 0),
-  };
-
-  // ── Table head cell ─────────────────────────────────────────────────────────
-  const Th = ({ children }) => (
-    <th style={{ padding: "11px 16px", textAlign: "left", color: textMuted, fontSize: 10.5, fontFamily: "monospace", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 500, whiteSpace: "nowrap" }}>
-      {children}
-    </th>
-  );
 
   return (
-    <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');`}</style>
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: "#111111", fontFamily: "Inter, system-ui, sans-serif" }}
+    >
+      {/* Top nav */}
+      <header
+        className="border-b backdrop-blur sticky top-0 z-30"
+        style={{ borderColor: "rgba(201,168,92,0.3)", backgroundColor: "rgba(26,26,26,0.85)" }}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+          <Logo size={40} />
+          <div className="flex items-center gap-4 sm:gap-6">
+            <span className="hidden sm:block text-sm text-white">
+              <span className="font-medium" style={{ color: "#C9A85C" }}>{profile.username || "Account"}</span>
+            </span>
+            <button
+              onClick={() => { window.location.href = "/app/dashboard"; }}
+              className="text-xs sm:text-sm transition"
+              style={{ color: "#999999" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C9A85C")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#999999")}
+            >
+              ← Dashboard
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-xs sm:text-sm transition"
+              style={{ color: "#999999" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C9A85C")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#999999")}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
 
-      <div style={{ minHeight: "100vh", backgroundColor: bg, fontFamily: "'DM Mono', monospace", color: textPrimary }}>
+      <main className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+        {/* Page header */}
+        <div className="mb-2">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-white">My Account</h1>
+          <p className="text-sm mt-1" style={{ color: "#999999" }}>
+            Manage your profile information and security settings.
+          </p>
+        </div>
 
-        {/* ── Top Nav ── */}
-        <header style={{
-          borderBottom: `1px solid ${borderGold}`, backgroundColor: "rgba(26,26,26,0.7)",
-          backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 40,
-        }}>
-          <div style={{ maxWidth: 1280, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Logo />
-            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-              <span style={{ color: textSecondary, fontSize: 12 }}>
-                Signed in as <span style={{ color: gold }}>{displayName}</span>
-              </span>
-              <button
-                onClick={handleLogout}
+        {/* Account overview pill */}
+        {!loadingProfile && (
+          <div
+            className="flex items-center gap-4 rounded-xl border px-5 py-4"
+            style={{ backgroundColor: "#1a1a1a", borderColor: "rgba(201,168,92,0.25)" }}
+          >
+            {/* Avatar initials */}
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
+              style={{ backgroundColor: "rgba(201,168,92,0.15)", color: "#C9A85C", border: "1px solid rgba(201,168,92,0.4)" }}
+            >
+              {(profile.username?.[0] || "?").toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-white font-semibold truncate">{profile.username}</p>
+              <p className="text-sm truncate" style={{ color: "#999999" }}>{profile.email || "No email set"}</p>
+            </div>
+            <div className="ml-auto flex-shrink-0">
+              <span
+                className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium capitalize"
                 style={{
-                  background: "none", border: `1px solid ${border}`, color: textSecondary,
-                  borderRadius: 6, padding: "6px 14px", fontSize: 12, cursor: "pointer",
-                  transition: "all .2s",
+                  backgroundColor: "rgba(201,168,92,0.15)",
+                  color: "#C9A85C",
+                  borderColor: "rgba(201,168,92,0.4)",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = borderGold; e.currentTarget.style.color = gold; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.color = textSecondary; }}
               >
-                Logout
+                {profile.role}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Info */}
+        <SectionCard
+          title="Profile Information"
+          description="Update your display name and email address."
+          accent
+        >
+          {loadingProfile ? (
+            <div className="text-sm text-center py-6" style={{ color: "#999999" }}>Loading…</div>
+          ) : (
+            <form onSubmit={handleProfileSubmit} className="space-y-5">
+              <InputField
+                label="Username"
+                name="username"
+                value={profileForm.username}
+                onChange={(e) => setProfileForm((p) => ({ ...p, username: e.target.value }))}
+                placeholder="your_username"
+              />
+              <InputField
+                label="Email Address"
+                name="email"
+                type="email"
+                value={profileForm.email}
+                onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))}
+                placeholder="you@example.com"
+                hint="Used for notifications and account recovery."
+              />
+
+              {/* Read-only role */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-white">Role</label>
+                <p className="text-xs" style={{ color: "#999999" }}>
+                  Your role is managed by an administrator.
+                </p>
+                <div
+                  className="h-11 px-3 rounded-md border flex items-center capitalize text-sm"
+                  style={{ backgroundColor: "rgba(17,17,17,0.5)", borderColor: "#2a2a2a", color: "#999999" }}
+                >
+                  {profile.role}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="h-11 px-6 rounded-md font-semibold transition disabled:opacity-60 text-sm"
+                  style={{ backgroundColor: "#C9A85C", color: "#000000" }}
+                  onMouseEnter={(e) => !savingProfile && (e.currentTarget.style.backgroundColor = "#d4b56b")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#C9A85C")}
+                >
+                  {savingProfile ? "Saving…" : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          )}
+        </SectionCard>
+
+        {/* Change Password */}
+        <SectionCard
+          title="Change Password"
+          description="Choose a strong password with at least 8 characters."
+        >
+          <form onSubmit={handlePasswordSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-white">Current Password</label>
+              <input
+                type={showPasswords ? "text" : "password"}
+                value={pwForm.currentPassword}
+                onChange={(e) => setPwForm((p) => ({ ...p, currentPassword: e.target.value }))}
+                placeholder="••••••••"
+                className="w-full h-11 px-3 rounded-md text-white border focus:outline-none transition"
+                style={{ backgroundColor: "#111111", borderColor: "#2a2a2a" }}
+                onFocus={(e) => (e.target.style.borderColor = "#C9A85C")}
+                onBlur={(e) => (e.target.style.borderColor = "#2a2a2a")}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-white">New Password</label>
+              <input
+                type={showPasswords ? "text" : "password"}
+                value={pwForm.newPassword}
+                onChange={(e) => setPwForm((p) => ({ ...p, newPassword: e.target.value }))}
+                placeholder="••••••••"
+                className="w-full h-11 px-3 rounded-md text-white border focus:outline-none transition"
+                style={{ backgroundColor: "#111111", borderColor: "#2a2a2a" }}
+                onFocus={(e) => (e.target.style.borderColor = "#C9A85C")}
+                onBlur={(e) => (e.target.style.borderColor = "#2a2a2a")}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-white">Confirm New Password</label>
+              <input
+                type={showPasswords ? "text" : "password"}
+                value={pwForm.confirmPassword}
+                onChange={(e) => setPwForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+                placeholder="••••••••"
+                className="w-full h-11 px-3 rounded-md text-white border focus:outline-none transition"
+                style={{ backgroundColor: "#111111", borderColor: "#2a2a2a" }}
+                onFocus={(e) => (e.target.style.borderColor = "#C9A85C")}
+                onBlur={(e) => (e.target.style.borderColor = "#2a2a2a")}
+              />
+              {pwForm.newPassword && pwForm.confirmPassword && pwForm.newPassword !== pwForm.confirmPassword && (
+                <p className="text-xs mt-1" style={{ color: "#ef4444" }}>Passwords do not match.</p>
+              )}
+            </div>
+
+            {/* Show/hide toggle */}
+            <button
+              type="button"
+              onClick={() => setShowPasswords((v) => !v)}
+              className="flex items-center gap-2 text-xs transition"
+              style={{ color: "#999999" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C9A85C")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#999999")}
+            >
+              <span style={{ fontSize: "14px" }}>{showPasswords ? "🙈" : "👁"}</span>
+              {showPasswords ? "Hide passwords" : "Show passwords"}
+            </button>
+
+            {/* Strength indicator */}
+            {pwForm.newPassword.length > 0 && (
+              <div className="space-y-1">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4].map((level) => {
+                    const strength = Math.min(
+                      4,
+                      [pwForm.newPassword.length >= 8, /[A-Z]/.test(pwForm.newPassword), /[0-9]/.test(pwForm.newPassword), /[^A-Za-z0-9]/.test(pwForm.newPassword)].filter(Boolean).length
+                    );
+                    const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"];
+                    return (
+                      <div
+                        key={level}
+                        className="h-1 flex-1 rounded-full transition-all"
+                        style={{
+                          backgroundColor: level <= strength ? colors[strength - 1] : "#2a2a2a",
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                <p className="text-xs" style={{ color: "#999999" }}>
+                  {(() => {
+                    const strength = [pwForm.newPassword.length >= 8, /[A-Z]/.test(pwForm.newPassword), /[0-9]/.test(pwForm.newPassword), /[^A-Za-z0-9]/.test(pwForm.newPassword)].filter(Boolean).length;
+                    return ["", "Weak", "Fair", "Good", "Strong"][strength];
+                  })()}
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="submit"
+                disabled={savingPw}
+                className="h-11 px-6 rounded-md font-semibold transition disabled:opacity-60 text-sm border"
+                style={{ backgroundColor: "transparent", color: "#C9A85C", borderColor: "rgba(201,168,92,0.5)" }}
+                onMouseEnter={(e) => !savingPw && (e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.1)")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                {savingPw ? "Changing…" : "Change Password"}
               </button>
             </div>
-          </div>
-        </header>
+          </form>
+        </SectionCard>
 
-        <main style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 24px" }}>
-
-          {/* ── Page title ── */}
-          <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, fontWeight: 700, color: textPrimary, margin: 0 }}>Admin Dashboard</h1>
-            <p style={{ color: textSecondary, fontSize: 12.5, marginTop: 4 }}>Manage all restoration requests and partners for Anderson Memorial Park.</p>
-          </div>
-
-          {/* ── Stats ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14, marginBottom: 28 }}>
-            <StatCard label="Total Requests" value={stats.total} />
-            <StatCard label="Pending" value={stats.pending} accent={gold} />
-            <StatCard label="Approved" value={stats.approved} accent="#e6d89b" />
-            <StatCard label="Completed" value={stats.completed} accent="#7dd4a0" />
-            <StatCard label="Partners" value={stats.partners} accent="#8ecae6" />
-            <StatCard label="Revenue" value={`$${stats.revenue.toLocaleString()}`} accent="#a8dadc" />
-          </div>
-
-          {/* ── Tabs ── */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 22 }}>
-            <Tab label="Requests" active={tab === "requests"} onClick={() => setTab("requests")} count={requests.length} />
-            <Tab label="Partners" active={tab === "partners"} onClick={() => setTab("partners")} count={partners.length} />
-          </div>
-
-          {/* ══════════════════════════════════════════════ REQUESTS TAB */}
-          {tab === "requests" && (
-            <div style={{ backgroundColor: surface, border: `1px solid ${border}`, borderRadius: 12, overflow: "hidden", borderLeft: `3px solid ${gold}` }}>
-
-              {/* Toolbar */}
-              <div style={{ padding: "14px 18px", borderBottom: `1px solid ${border}`, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                <input
-                  placeholder="Search customer, location, email, ID…"
-                  value={searchQ} onChange={e => setSearchQ(e.target.value)}
-                  style={{ ...inputStyle, width: 260, height: 36, fontSize: 12.5 }}
-                />
-                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                  style={{ ...selectStyle, width: 175, height: 36, fontSize: 12.5 }}>
-                <option value="all">All Statuses</option>
-<option value="pending_approval">Pending Approval</option>
-<option value="approved">Approved</option>
-<option value="completed">Completed</option>
-<option value="denied">Denied</option>
-                </select>
-                <span style={{ color: textMuted, fontSize: 12, marginLeft: "auto" }}>{filteredRequests.length} result{filteredRequests.length !== 1 ? "s" : ""}</span>
-              </div>
-
-              {reqLoading ? (
-                <div style={{ padding: "48px 0", textAlign: "center", color: textSecondary, fontSize: 13 }}>Loading requests…</div>
-              ) : filteredRequests.length === 0 ? (
-                <div style={{ padding: "48px 0", textAlign: "center", color: textMuted, fontSize: 13 }}>No requests match your filters.</div>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                    <thead style={{ backgroundColor: "rgba(17,17,17,0.5)" }}>
-                      <tr>
-                        <Th>ID</Th>
-                        <Th>Customer</Th>
-                        <Th>Email</Th>
-                        <Th>Location</Th>
-                        <Th>Package</Th>
-                        <Th>Partner</Th>
-                        <Th>Status</Th>
-                        <Th>Approved By</Th>
-                        <Th>Approved At</Th>
-                        <Th>Denied By</Th>
-                        <Th>Denied At</Th>
-                        <Th>Submitted</Th>
-                        <Th>Action</Th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredRequests.map((r, i) => (
-                        <tr key={r.id} style={{ borderTop: `1px solid ${border}`, backgroundColor: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)" }}>
-                          <td style={{ padding: "13px 16px", color: textMuted, fontFamily: "monospace", fontSize: 12 }}>#{r.id}</td>
-                          <td style={{ padding: "13px 16px", color: textPrimary, fontWeight: 500 }}>{r.customerName}</td>
-                          <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12 }}>{r.customerEmail}</td>
-                          <td style={{ padding: "13px 16px", color: textSecondary, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.memorialLocation}</td>
-                          <td style={{ padding: "13px 16px", color: textPrimary, whiteSpace: "nowrap" }}>
-                            {r.packageType === "basic_annual" ? "Basic $549" : "Premium $749"}
-                          </td>
-                          <td style={{ padding: "13px 16px", color: textMuted, fontFamily: "monospace", fontSize: 12 }}>
-                            {r.partner ? r.partner.username : (r.partnerId ? `#${r.partnerId}` : "—")}
-                          </td>
-                          <td style={{ padding: "13px 16px" }}><StatusBadge status={r.status} /></td>
-                          <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12 }}>{r.approvedBy || <span style={{ color: textMuted }}>—</span>}</td>
-                          <td style={{ padding: "13px 16px", color: textSecondary, whiteSpace: "nowrap", fontSize: 12 }}>
-                            {r.approvedAt ? new Date(r.approvedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : <span style={{ color: textMuted }}>—</span>}
-                          </td>
-                          <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12 }}>{r.deniedBy || <span style={{ color: textMuted }}>—</span>}</td>
-                          <td style={{ padding: "13px 16px", color: textSecondary, whiteSpace: "nowrap", fontSize: 12 }}>
-                            {r.deniedAt ? new Date(r.deniedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : <span style={{ color: textMuted }}>—</span>}
-                          </td>
-                          <td style={{ padding: "13px 16px", color: textSecondary, whiteSpace: "nowrap", fontSize: 12 }}>
-                            {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </td>
-                          <td style={{ padding: "13px 16px" }}>
-  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-    <button onClick={() => setSelectedRequest(r)}
-      style={{ background: "none", border: `1px solid ${border}`, color: gold, borderRadius: 5, padding: "5px 12px", fontSize: 11.5, cursor: "pointer", fontFamily: "monospace", transition: "all .15s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.08)"; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
-    >View</button>
-
-    {r.status === "pending_approval" && (
-      <>
-        <button
-          onClick={async () => {
-            try {
-              await axios.patch(`${BASE_URL}/admin/requests/${r.id}/status`, { status: "approved" }, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              ok("Approved", `Request #${r.id} has been approved.`);
-              handleStatusChange(r.id, "approved");
-            } catch (e) {
-              err("Failed", e?.response?.data?.message || "Could not approve request.");
-            }
-          }}
-          style={{ background: "none", border: `1px solid ${border}`, color: "#7dd4a0", borderRadius: 5, padding: "5px 12px", fontSize: 11.5, cursor: "pointer", fontFamily: "monospace", transition: "all .15s" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = "#7dd4a0"; e.currentTarget.style.backgroundColor = "rgba(125,212,160,0.08)"; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
-        >Approve</button>
-
-        <button
-          onClick={async () => {
-            try {
-                await axios.patch(`${BASE_URL}/admin/requests/${r.id}/status`, { status: "denied" }, {
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
-                  ok("Denied", `Request #${r.id} has been denied.`);
-                  handleStatusChange(r.id, "denied");
-            } catch (e) {
-              err("Failed", e?.response?.data?.message || "Could not update request.");
-            }
-          }}
-          style={{ background: "none", border: `1px solid ${border}`, color: "#e05555", borderRadius: 5, padding: "5px 12px", fontSize: 11.5, cursor: "pointer", fontFamily: "monospace", transition: "all .15s" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = "#e05555"; e.currentTarget.style.backgroundColor = "rgba(224,85,85,0.07)"; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
-        >Deny</button>
-      </>
-    )}
-  </div>
-</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+        {/* Danger zone */}
+        <SectionCard title="Session" description="Manage your active session.">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-sm text-white font-medium">Sign out of your account</p>
+              <p className="text-xs mt-0.5" style={{ color: "#999999" }}>
+                You will be returned to the login screen.
+              </p>
             </div>
-          )}
+            <button
+              onClick={handleLogout}
+              className="h-11 px-6 rounded-md border text-sm font-medium transition flex-shrink-0"
+              style={{ borderColor: "#2a2a2a", color: "#cccccc", backgroundColor: "transparent" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#ef4444";
+                e.currentTarget.style.color = "#ef4444";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "#2a2a2a";
+                e.currentTarget.style.color = "#cccccc";
+              }}
+            >
+              Sign Out
+            </button>
+          </div>
+        </SectionCard>
 
-          {/* ══════════════════════════════════════════════ PARTNERS TAB */}
-          {tab === "partners" && (
-            <div style={{ backgroundColor: surface, border: `1px solid ${border}`, borderRadius: 12, overflow: "hidden", borderLeft: `3px solid #8ecae6` }}>
-
-              <div style={{ padding: "14px 18px 13px", borderBottom: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600, fontFamily: "'Cormorant Garamond', serif" }}>All Partners</div>
-                <span style={{ color: textMuted, fontSize: 12 }}>{partners.length} registered</span>
-              </div>
-
-              {partLoading ? (
-                <div style={{ padding: "48px 0", textAlign: "center", color: textSecondary, fontSize: 13 }}>Loading partners…</div>
-              ) : partners.length === 0 ? (
-                <div style={{ padding: "48px 0", textAlign: "center", color: textMuted, fontSize: 13 }}>No partners found.</div>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                    <thead style={{ backgroundColor: "rgba(17,17,17,0.5)" }}>
-                      <tr>
-                        <Th>ID</Th>
-                        <Th>Username</Th>
-                        <Th>Email</Th>
-                        <Th>Role</Th>
-                        <Th>Requests</Th>
-                        <Th>Created</Th>
-                        <Th>Actions</Th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {partners.map((p, i) => {
-                        const reqCount = requests.filter(r => r.partnerId === p.id).length;
-                        return (
-                          <tr key={p.id} style={{ borderTop: `1px solid ${border}`, backgroundColor: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)" }}>
-                            <td style={{ padding: "13px 16px", color: textMuted, fontFamily: "monospace", fontSize: 12 }}>#{p.id}</td>
-                            <td style={{ padding: "13px 16px", color: textPrimary, fontWeight: 500 }}>{p.username}</td>
-                            <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12 }}>{p.email || <span style={{ color: textMuted }}>—</span>}</td>
-                            <td style={{ padding: "13px 16px" }}>
-                              <span style={{
-                                fontSize: 11, fontFamily: "monospace", letterSpacing: "0.06em",
-                                padding: "3px 9px", borderRadius: 999,
-                                backgroundColor: p.role === "admin" ? "rgba(201,168,92,0.13)" : "rgba(142,202,230,0.1)",
-                                color: p.role === "admin" ? gold : "#8ecae6",
-                                border: `1px solid ${p.role === "admin" ? borderGold : "rgba(142,202,230,0.3)"}`,
-                              }}>{p.role}</span>
-                            </td>
-                            <td style={{ padding: "13px 16px", color: textSecondary }}>{reqCount}</td>
-                            <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12, whiteSpace: "nowrap" }}>
-                              {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            </td>
-                            <td style={{ padding: "13px 16px" }}>
-                              <div style={{ display: "flex", gap: 7 }}>
-                                <button onClick={() => setEditPartner(p)}
-                                  style={{ background: "none", border: `1px solid ${border}`, color: gold, borderRadius: 5, padding: "5px 12px", fontSize: 11.5, cursor: "pointer", fontFamily: "monospace", transition: "all .15s" }}
-                                  onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.08)"; }}
-                                  onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
-                                >Edit</button>
-                                <button onClick={() => setDeletePartner(p)}
-                                  style={{ background: "none", border: `1px solid ${border}`, color: "#e05555", borderRadius: 5, padding: "5px 12px", fontSize: 11.5, cursor: "pointer", fontFamily: "monospace", transition: "all .15s" }}
-                                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#e05555"; e.currentTarget.style.backgroundColor = "rgba(224,85,85,0.07)"; }}
-                                  onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
-                                >Delete</button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
-
-      {/* ── Modals ── */}
-      {selectedRequest && (
-        <RequestDetailModal
-          request={selectedRequest}
-          token={token}
-          onClose={() => setSelectedRequest(null)}
-          onStatusChange={handleStatusChange}
-        />
-      )}
-      {editPartner && (
-        <EditPartnerModal
-          partner={editPartner}
-          token={token}
-          onClose={() => setEditPartner(null)}
-          onSaved={fetchPartners}
-        />
-      )}
-      {deletePartner && (
-        <ConfirmDeleteModal
-          partner={deletePartner}
-          loading={!!deletingId}
-          onClose={() => setDeletePartner(null)}
-          onConfirm={handleDeletePartner}
-        />
-      )}
-    </>
+        <p className="text-center text-xs pb-4" style={{ color: "#555555" }}>
+          Anderson Memorial Park Partner Portal
+        </p>
+      </main>
+    </div>
   );
 }

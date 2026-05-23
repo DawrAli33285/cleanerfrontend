@@ -43,6 +43,7 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [accountFilter, setAccountFilter] = useState("active");
 
   const mapRequest = (r) => ({
     id: r.id,
@@ -137,6 +138,24 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
             >
               Logout
             </button>
+            <button
+              onClick={()=>{window.location.href='/app/account'}}
+              className="text-xs sm:text-sm transition"
+              style={{ color: "#999999" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C9A85C")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#999999")}
+            >
+              My Account
+            </button>
+            <button
+              onClick={()=>{window.location.href='/app/support'}}
+              className="text-xs sm:text-sm transition"
+              style={{ color: "#999999" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C9A85C")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#999999")}
+            >
+              Support
+            </button>
           </div>
         </div>
       </header>
@@ -149,22 +168,47 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
 
         {/* Header + CTA */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-white">Restoration Requests</h1>
-            <p className="text-sm mt-1" style={{ color: "#999999" }}>
-              Manage Anderson Memorial Park restoration partner workflow.
-            </p>
-          </div>
-          <button
-            onClick={() => setShowNew(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-12 px-6 rounded-md font-semibold transition"
-            style={{ backgroundColor: "#C9A85C", color: "#000000" }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d4b56b")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#C9A85C")}
-          >
-            <span className="text-lg leading-none">+</span> New Request
-          </button>
-        </div>
+  <div>
+    <h1 className="text-2xl sm:text-3xl font-semibold text-white">Restoration Requests</h1>
+    <p className="text-sm mt-1" style={{ color: "#999999" }}>
+      Manage Anderson Memorial Park restoration partner workflow.
+    </p>
+  </div>
+  <div className="flex items-center gap-2">
+  {/* <button
+    onClick={() => setAccountFilter("active")}
+    className="h-11 px-4 rounded-md text-sm font-medium border transition"
+    style={{
+      backgroundColor: accountFilter === "active" ? "#C9A85C" : "#111111",
+      color: accountFilter === "active" ? "#000000" : "#999999",
+      borderColor: accountFilter === "active" ? "#C9A85C" : "#2a2a2a",
+    }}
+  >
+    Active Accounts
+  </button>
+  <button
+    onClick={() => setAccountFilter("inactive")}
+    className="h-11 px-4 rounded-md text-sm font-medium border transition"
+    style={{
+      backgroundColor: accountFilter === "inactive" ? "#C9A85C" : "#111111",
+      color: accountFilter === "inactive" ? "#000000" : "#999999",
+      borderColor: accountFilter === "inactive" ? "#C9A85C" : "#2a2a2a",
+    }}
+  >
+    Non Active Accounts
+  </button> */}
+
+  <button
+      onClick={() => setShowNew(true)}
+      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-11 px-6 rounded-md font-semibold transition"
+      style={{ backgroundColor: "#C9A85C", color: "#000000" }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d4b56b")}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#C9A85C")}
+    >
+      <span className="text-lg leading-none">+</span> New Request
+    </button>
+</div>
+</div>
 
         {/* Active Requests */}
         <section
