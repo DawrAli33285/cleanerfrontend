@@ -170,9 +170,7 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
   <div>
     <h1 className="text-2xl sm:text-3xl font-semibold text-white">Restoration Requests</h1>
-    <p className="text-sm mt-1" style={{ color: "#999999" }}>
-      Manage Anderson Memorial Park restoration partner workflow.
-    </p>
+   
   </div>
   <div className="flex items-center gap-2">
   {/* <button

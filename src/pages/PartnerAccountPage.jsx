@@ -413,7 +413,7 @@ export default function AccountPage({ token, onLogout }) {
         </SectionCard>
 
         <p className="text-center text-xs pb-4" style={{ color: "#555555" }}>
-          Anderson Memorial Park Partner Portal
+          Partner Portal
         </p>
       </main>
     </div>

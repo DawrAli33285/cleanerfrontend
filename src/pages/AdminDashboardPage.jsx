@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { BASE_URL } from "../baseurl";
 import { useToast } from "../components/toast";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
 // ─── Shared Design Tokens ────────────────────────────────────────────────────
@@ -134,6 +135,161 @@ function GhostBtn({ onClick, children, danger, style = {} }) {
   );
 }
 
+function UploadDocumentsModal({ request, token, onClose }) {
+  const { success: ok, error: err } = useToast();
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploaded, setUploaded] = useState([]);
+  const fileInputRef = React.useRef(null);
+
+  const handleFileChange = (e) => {
+    const selected = Array.from(e.target.files);
+    setFiles(prev => [...prev, ...selected]);
+    e.target.value = "";
+  };
+
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpload = async () => {
+    if (!files.length) return;
+    const formData = new FormData();
+    files.forEach(f => formData.append("documents", f));
+    try {
+      setUploading(true);
+      const { data } = await axios.post(
+        `${BASE_URL}/admin/requests/${request.id}/documents`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // ✅ No Content-Type here — axios sets it automatically with boundary
+          },
+        }
+      );
+      ok("Uploaded", `${files.length} document${files.length !== 1 ? "s" : ""} uploaded successfully.`);
+      setUploaded(prev => [...prev, ...(data.files || [])]);
+      setFiles([]);
+    } catch (e) {
+      err("Upload failed", e?.response?.data?.message || "Could not upload documents.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const formatSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  return (
+    <Modal
+      title={`Upload Documents`}
+      subtitle={`Request #${request.id} — ${request.customerName}`}
+      onClose={onClose}
+    >
+      {/* Drop zone */}
+      <div
+        onClick={() => fileInputRef.current?.click()}
+        style={{
+          border: `2px dashed ${borderGold}`,
+          borderRadius: 10,
+          padding: "32px 20px",
+          textAlign: "center",
+          cursor: "pointer",
+          backgroundColor: "rgba(201,168,92,0.04)",
+          transition: "background .2s",
+          marginBottom: 16,
+        }}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.08)"}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.04)"}
+        onDragOver={e => { e.preventDefault(); e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.1)"; }}
+        onDragLeave={e => e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.04)"}
+        onDrop={e => {
+          e.preventDefault();
+          e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.04)";
+          const dropped = Array.from(e.dataTransfer.files);
+          setFiles(prev => [...prev, ...dropped]);
+        }}
+      >
+        <div style={{ fontSize: 28, marginBottom: 8 }}>📄</div>
+        <div style={{ color: gold, fontSize: 13.5, fontWeight: 500, marginBottom: 4 }}>
+          Click to browse or drag & drop
+        </div>
+        <div style={{ color: textMuted, fontSize: 12 }}>
+          PDF, images, Word documents, etc.
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {/* Staged files */}
+      {files.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ color: textSecondary, fontSize: 11.5, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+            Queued ({files.length})
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {files.map((f, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                backgroundColor: bg, border: `1px solid ${border}`, borderRadius: 7,
+                padding: "8px 12px",
+              }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: textPrimary, fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
+                  <div style={{ color: textMuted, fontSize: 11 }}>{formatSize(f.size)}</div>
+                </div>
+                <button
+                  onClick={() => removeFile(i)}
+                  style={{ background: "none", border: "none", color: "#e05555", cursor: "pointer", fontSize: 15, padding: "0 4px", flexShrink: 0 }}
+                >×</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Already uploaded this session */}
+      {uploaded.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ color: "#7dd4a0", fontSize: 11.5, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+            ✓ Uploaded this session ({uploaded.length})
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {uploaded.map((u, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                backgroundColor: "rgba(125,212,160,0.05)", border: `1px solid rgba(125,212,160,0.2)`,
+                borderRadius: 7, padding: "7px 12px",
+              }}>
+                <span style={{ color: "#7dd4a0", fontSize: 13 }}>✓</span>
+                <span style={{ color: textSecondary, fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {u.originalName || u.filename || u}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>
+        <GhostBtn onClick={onClose}>Close</GhostBtn>
+        <ActionBtn onClick={handleUpload} disabled={uploading || files.length === 0}>
+          {uploading ? "Uploading…" : `Upload ${files.length > 0 ? `(${files.length})` : ""}`}
+        </ActionBtn>
+      </div>
+    </Modal>
+  );
+}
+
 // ─── Confirm Delete Modal ─────────────────────────────────────────────────────
 function ConfirmDeleteModal({ partner, onConfirm, onClose, loading }) {
   return (
@@ -213,13 +369,37 @@ function RequestDetailModal({ request, token, onClose, onStatusChange }) {
   const { success: ok, error: err } = useToast();
   const [updating, setUpdating] = useState(false);
   const [status, setStatus] = useState(request.status);
+  const [documents, setDocuments] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      try {
+        setDocsLoading(true);
+        const { data } = await axios.get(
+          `${BASE_URL}/admin/requests/${request.id}/documents`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        console.log("DOCS RESPONSE:", data);
+        setDocuments(data.documents || data.files || []);
+      } catch (e) {
+        console.error("DOCS FETCH ERROR:", e);
+        setDocuments([]);
+      } finally {
+        setDocsLoading(false);
+      }
+    };
+    fetchDocs();
+  }, [request.id, token]);
 
   const updateStatus = async (newStatus) => {
     try {
       setUpdating(true);
-      await axios.patch(`${BASE_URL}/admin/requests/${request.id}/status`, { status: newStatus }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.patch(
+        `${BASE_URL}/admin/requests/${request.id}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setStatus(newStatus);
       ok("Status updated", `Request #${request.id} is now ${newStatus}.`);
       onStatusChange(request.id, newStatus);
@@ -231,33 +411,167 @@ function RequestDetailModal({ request, token, onClose, onStatusChange }) {
   };
 
   const Row = ({ label, value }) => (
-    <div style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: `1px solid ${border}`, alignItems: "flex-start" }}>
-      <div style={{ color: textMuted, fontSize: 11.5, fontFamily: "monospace", letterSpacing: "0.06em", textTransform: "uppercase", minWidth: 130, paddingTop: 1 }}>{label}</div>
-      <div style={{ color: textPrimary, fontSize: 13.5, flex: 1, wordBreak: "break-word" }}>{value || <span style={{ color: textMuted }}>—</span>}</div>
+    <div style={{
+      display: "flex", gap: 12, padding: "10px 0",
+      borderBottom: `1px solid ${border}`, alignItems: "flex-start",
+    }}>
+      <div style={{
+        color: textMuted, fontSize: 11.5, fontFamily: "monospace",
+        letterSpacing: "0.06em", textTransform: "uppercase",
+        minWidth: 130, paddingTop: 1,
+      }}>{label}</div>
+      <div style={{ color: textPrimary, fontSize: 13.5, flex: 1, wordBreak: "break-word" }}>
+        {value || <span style={{ color: textMuted }}>—</span>}
+      </div>
     </div>
   );
 
+  const getFileIcon = (filename = "") => {
+    const ext = filename.split(".").pop().toLowerCase();
+    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "🖼️";
+    if (ext === "pdf") return "📄";
+    if (["doc", "docx"].includes(ext)) return "📝";
+    return "📎";
+  };
+
   return (
-    <Modal title={`Request #${request.id}`} subtitle={`Submitted ${new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`} onClose={onClose}>
+    <Modal
+      title={`Request #${request.id}`}
+      subtitle={`Submitted ${new Date(request.createdAt).toLocaleDateString("en-US", {
+        month: "long", day: "numeric", year: "numeric",
+      })}`}
+      onClose={onClose}
+    >
       <Row label="Status" value={<StatusBadge status={status} />} />
       <Row label="Customer" value={request.customerName} />
       <Row label="Phone" value={request.customerPhone} />
       <Row label="Email" value={request.customerEmail} />
       <Row label="Location" value={request.memorialLocation} />
-      <Row label="Package" value={request.packageType === "basic_annual" ? "Basic Annual — $549" : "Premium Annual — $749"} />
+      <Row label="Package" value={
+        request.packageType === "basic_annual"
+          ? "Basic Annual — $549"
+          : "Premium Annual — $749"
+      } />
       <Row label="Price" value={`$${Number(request.packagePrice).toFixed(2)}`} />
       <Row label="Partner ID" value={request.partnerId ? `#${request.partnerId}` : "—"} />
       <Row label="Approved By" value={request.approvedBy} />
-      <Row label="Approved At" value={request.approvedAt ? new Date(request.approvedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
+      <Row label="Approved At" value={
+        request.approvedAt
+          ? new Date(request.approvedAt).toLocaleDateString("en-US", {
+              month: "long", day: "numeric", year: "numeric",
+            })
+          : null
+      } />
       <Row label="Denied By" value={request.deniedBy} />
-      <Row label="Denied At" value={request.deniedAt ? new Date(request.deniedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
+      <Row label="Denied At" value={
+        request.deniedAt
+          ? new Date(request.deniedAt).toLocaleDateString("en-US", {
+              month: "long", day: "numeric", year: "numeric",
+            })
+          : null
+      } />
       {request.notes && <Row label="Notes" value={request.notes} />}
 
+      {/* ── Uploaded Documents ── */}
       <div style={{ marginTop: 20 }}>
-        <div style={{ color: textSecondary, fontSize: 11.5, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Update Status</div>
+        <div style={{
+          color: textSecondary, fontSize: 11.5, fontFamily: "monospace",
+          textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10,
+        }}>
+          Uploaded Documents
+        </div>
+
+        {docsLoading ? (
+          <div style={{ padding: "14px 0", color: textMuted, fontSize: 12.5, fontFamily: "monospace" }}>
+            Loading documents…
+          </div>
+        ) : documents.length === 0 ? (
+          <div style={{
+            padding: "14px 16px", backgroundColor: bg,
+            border: `1px dashed ${border}`, borderRadius: 8,
+            color: textMuted, fontSize: 12.5, fontFamily: "monospace", textAlign: "center",
+          }}>
+            No documents uploaded yet.
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {documents.map((doc, i) => {
+              const rawPath = doc.storagePath || doc.storage_path || "";
+              const filename = rawPath.split(/[/\\]/).pop() || `File ${i + 1}`;
+              const fileUrl = `http://localhost:5000/files/${filename}`;
+
+              return (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  backgroundColor: bg, border: `1px solid ${border}`,
+                  borderRadius: 8, padding: "10px 14px", transition: "border-color .15s",
+                }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = borderGold}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = border}
+                >
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 6,
+                    backgroundColor: "rgba(201,168,92,0.08)",
+                    border: `1px solid ${borderGold}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 18, flexShrink: 0,
+                  }}>
+                    {getFileIcon(filename)}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      color: textPrimary, fontSize: 13,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {filename}
+                    </div>
+                    {(doc.createdAt || doc.created_at) && (
+                      <div style={{ color: textMuted, fontSize: 11, marginTop: 2 }}>
+                        Uploaded {new Date(doc.createdAt || doc.created_at).toLocaleDateString("en-US", {
+                          month: "short", day: "numeric", year: "numeric",
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: gold, fontSize: 11.5, fontFamily: "monospace",
+                      textDecoration: "none", flexShrink: 0,
+                      border: `1px solid ${borderGold}`,
+                      borderRadius: 5, padding: "4px 10px",
+                      backgroundColor: "rgba(201,168,92,0.07)",
+                      transition: "background .15s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.15)"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.07)"}
+                  >
+                    Open ↗
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Update Status ── */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{
+          color: textSecondary, fontSize: 11.5, fontFamily: "monospace",
+          textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10,
+        }}>
+          Update Status
+        </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {["pending_approval", "approved", "completed", "denied"].map(s => (
-            <ActionBtn key={s} disabled={updating || status === s}
+          {["pending_approval", "approved", "completed", "denied"].map(s => (
+            <ActionBtn
+              key={s}
+              disabled={updating || status === s}
               onClick={() => updateStatus(s)}
               color={status === s ? "rgba(201,168,92,0.2)" : surfaceMid}
               hoverColor="rgba(201,168,92,0.15)"
@@ -276,6 +590,7 @@ function RequestDetailModal({ request, token, onClose, onStatusChange }) {
     </Modal>
   );
 }
+
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, accent }) {
@@ -318,6 +633,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
   const [editPartner, setEditPartner] = useState(null);
   const [deletePartner, setDeletePartner] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+const [uploadRequest, setUploadRequest] = useState(null);
 
   // ── Fetch Requests ──────────────────────────────────────────────────────────
   const fetchRequests = useCallback(async () => {
@@ -448,7 +764,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
           {/* ── Page title ── */}
           <div style={{ marginBottom: 28 }}>
             <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, fontWeight: 700, color: textPrimary, margin: 0 }}>Admin Dashboard</h1>
-            <p style={{ color: textSecondary, fontSize: 12.5, marginTop: 4 }}>Manage all restoration requests and partners for Anderson Memorial Park.</p>
+            <p style={{ color: textSecondary, fontSize: 12.5, marginTop: 4 }}>Manage all restoration requests and partners for platform.</p>
           </div>
 
           {/* ── Stats ── */}
@@ -540,7 +856,24 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
                           </td>
                           <td style={{ padding: "13px 16px" }}>
   <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-    <button onClick={() => setSelectedRequest(r)}
+  {r.status === "approved" && (
+      <button
+        onClick={() => setUploadRequest(r)}
+        style={{ background: "none", border: `1px solid ${border}`, color: "#8ecae6", borderRadius: 5, padding: "5px 12px", fontSize: 11.5, cursor: "pointer", fontFamily: "monospace", transition: "all .15s" }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = "#8ecae6"; e.currentTarget.style.backgroundColor = "rgba(142,202,230,0.08)"; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
+      >Upload</button>
+    )}
+  <button onClick={async () => {
+      try {
+        const { data } = await axios.get(`${BASE_URL}/admin/requests/${r.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSelectedRequest(data.request);
+      } catch {
+        setSelectedRequest(r);
+      }
+    }}
       style={{ background: "none", border: `1px solid ${border}`, color: gold, borderRadius: 5, padding: "5px 12px", fontSize: 11.5, cursor: "pointer", fontFamily: "monospace", transition: "all .15s" }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.backgroundColor = "rgba(201,168,92,0.08)"; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
@@ -581,6 +914,8 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
           onMouseEnter={e => { e.currentTarget.style.borderColor = "#e05555"; e.currentTarget.style.backgroundColor = "rgba(224,85,85,0.07)"; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.backgroundColor = "transparent"; }}
         >Deny</button>
+
+        
       </>
     )}
   </div>
@@ -693,6 +1028,23 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
           onConfirm={handleDeletePartner}
         />
       )}
+
+{uploadRequest && (
+  <UploadDocumentsModal
+    request={uploadRequest}
+    token={token}
+    onClose={() => {
+      setUploadRequest(null);
+      // If the detail modal is open for the same request, refresh it
+      if (selectedRequest && selectedRequest.id === uploadRequest.id) {
+        axios.get(`${BASE_URL}/admin/requests/${uploadRequest.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).then(({ data }) => setSelectedRequest(data.request)).catch(() => {});
+      }
+    }}
+  />
+)}
+
     </>
   );
 }

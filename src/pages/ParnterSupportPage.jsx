@@ -132,9 +132,7 @@ function Logo() {
         <rect width="28" height="28" rx="6" fill="rgba(201,168,92,0.15)" />
         <path d="M14 6l2 5h5l-4 3 1.5 5L14 16l-4.5 3 1.5-5-4-3h5z" fill="#C9A85C" />
       </svg>
-      <span style={{ fontSize: "15px", fontWeight: 600, color: "#C9A85C", letterSpacing: "0.04em" }}>
-        Anderson Memorial Park
-      </span>
+      
     </div>
   );
 }

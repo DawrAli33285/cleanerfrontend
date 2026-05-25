@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
           </h1>
           <p className="mt-2 text-center text-sm" style={{ color: "#999999" }}>
             Enter your email and choose a new password for your{" "}
-            <span style={{ color: "#C9A85C" }}>Anderson Memorial Park</span> account.
+            <span style={{ color: "#C9A85C" }}>Partner</span> account.
           </p>
 
           <div className="mt-6 mb-6 border-t" style={{ borderColor: "#2a2a2a" }} />
