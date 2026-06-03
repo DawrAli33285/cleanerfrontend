@@ -1,14 +1,25 @@
 import { useState } from "react";
 
-const gold = "#C9A85C";
-const goldDim = "rgba(201,168,92,0.15)";
-const goldBorder = "rgba(201,168,92,0.3)";
-const bg = "#0d0d0d";
-const surface = "#161616";
-const border = "#222222";
-const textPrimary = "#f0f0f0";
-const textSecondary = "#888888";
-const textMuted = "#555555";
+/**
+ * Lasting Legacy Cleaners — Terms & Conditions
+ * Matches LoginPage theme:
+ *  - Background: #F5F7FA
+ *  - Card:       #FFFFFF
+ *  - Primary:    #1669A9
+ *  - Dark:       #1A1A2E
+ *  - Text:       #374151 / #6B7280
+ *  - Accent:     #1E90CF
+ */
+
+const blue = "#1669A9";
+const blueDim = "rgba(22,105,169,0.08)";
+const blueBorder = "rgba(22,105,169,0.2)";
+const bg = "#F5F7FA";
+const surface = "#FFFFFF";
+const border = "#E5EAF0";
+const textPrimary = "#1A1A2E";
+const textSecondary = "#6B7280";
+const textMuted = "#9CA3AF";
 
 const sections = [
   {
@@ -87,7 +98,7 @@ function Section({ num, title, body }) {
         style={{
           fontFamily: "monospace",
           fontSize: 11,
-          color: gold,
+          color: blue,
           letterSpacing: "0.1em",
           minWidth: 28,
           paddingTop: 3,
@@ -99,7 +110,7 @@ function Section({ num, title, body }) {
       <div style={{ flex: 1 }}>
         <div
           style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Poppins', sans-serif",
             fontSize: 16,
             fontWeight: 600,
             color: textPrimary,
@@ -117,7 +128,7 @@ function Section({ num, title, body }) {
               fontSize: 13,
               lineHeight: 1.8,
               margin: i > 0 ? "12px 0 0" : 0,
-              fontFamily: "'DM Mono', monospace",
+              fontFamily: "'Roboto', sans-serif",
             }}
           >
             {para}
@@ -158,31 +169,43 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "'DM Mono', monospace",
+          fontFamily: "'Roboto', sans-serif",
           padding: 24,
         }}
       >
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Mono:wght@400;500&display=swap');`}</style>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap');`}</style>
+        {/* Decorative top bar */}
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            background: `linear-gradient(90deg, ${blue}, #1E90CF, ${blue})`,
+          }}
+        />
         <div style={{ textAlign: "center", maxWidth: 420 }}>
           <div
             style={{
               width: 64,
               height: 64,
               borderRadius: "50%",
-              border: `1px solid ${gold}`,
+              border: `1px solid ${blue}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 24px",
+              backgroundColor: blueDim,
             }}
           >
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M6 14l6 6 10-10" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M6 14l6 6 10-10" stroke={blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Poppins', sans-serif",
               fontSize: 24,
               fontWeight: 600,
               color: textPrimary,
@@ -192,7 +215,7 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
             Agreement Accepted
           </div>
           <p style={{ color: textSecondary, fontSize: 13, lineHeight: 1.7, margin: "0 0 8px" }}>
-            Thank you, <span style={{ color: gold }}>{name}</span>. Your electronic signature has been recorded.
+            Thank you, <span style={{ color: blue, fontWeight: 500 }}>{name}</span>. Your electronic signature has been recorded.
           </p>
           <p style={{ color: textMuted, fontSize: 12, margin: 0 }}>
             {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
@@ -207,22 +230,22 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
       style={{
         minHeight: "100vh",
         backgroundColor: bg,
-        fontFamily: "'DM Mono', monospace",
+        fontFamily: "'Roboto', sans-serif",
         color: textPrimary,
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap');
         .tc-scroll::-webkit-scrollbar { width: 4px; }
         .tc-scroll::-webkit-scrollbar-track { background: transparent; }
-        .tc-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-        .tc-check:hover { border-color: ${gold} !important; }
-        .tc-sign-btn:hover:not(:disabled) { background-color: #d4b56b !important; }
-        .tc-input:focus { outline: none; border-color: ${gold} !important; }
+        .tc-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+        .tc-check:hover { border-color: ${blue} !important; }
+        .tc-sign-btn:hover:not(:disabled) { background-color: #1E90CF !important; }
+        .tc-input:focus { outline: none; border-color: ${blue} !important; box-shadow: 0 0 0 3px rgba(22,105,169,0.12) !important; }
       `}</style>
 
       {/* Top accent line */}
-      <div style={{ height: 2, background: `linear-gradient(90deg, transparent, ${gold}, transparent)` }} />
+      <div style={{ height: 4, background: `linear-gradient(90deg, ${blue}, #1E90CF, ${blue})` }} />
 
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px 60px" }}>
 
@@ -230,13 +253,13 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 20 }}>
             <svg width="40" height="40" viewBox="0 0 64 64" fill="none">
-              <path d="M32 4L8 14v18c0 13 10.5 24.5 24 28 13.5-3.5 24-15 24-28V14L32 4z" stroke={gold} strokeWidth="1.5" fill="none" />
-              <path d="M22 32l7 7 13-13" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M32 4L8 14v18c0 13 10.5 24.5 24 28 13.5-3.5 24-15 24-28V14L32 4z" stroke={blue} strokeWidth="1.5" fill="none" />
+              <path d="M22 32l7 7 13-13" stroke={blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <div style={{ textAlign: "left" }}>
               <div
                 style={{
-                  fontFamily: "'Cormorant Garamond', serif",
+                  fontFamily: "'Poppins', sans-serif",
                   fontSize: 22,
                   fontWeight: 700,
                   color: textPrimary,
@@ -245,7 +268,7 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
               >
                 Lasting Legacy Cleaners
               </div>
-              <div style={{ fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: gold, marginTop: 2 }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: blue, marginTop: 2 }}>
                 Partner Agreement
               </div>
             </div>
@@ -258,10 +281,10 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
               gap: 8,
               padding: "5px 16px",
               borderRadius: 999,
-              border: `1px solid ${goldBorder}`,
-              backgroundColor: goldDim,
+              border: `1px solid ${blueBorder}`,
+              backgroundColor: blueDim,
               fontSize: 11,
-              color: gold,
+              color: blue,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               marginBottom: 20,
@@ -286,9 +309,10 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
           style={{
             backgroundColor: surface,
             border: `1px solid ${border}`,
-            borderRadius: 12,
+            borderRadius: 16,
             marginBottom: 24,
             overflow: "hidden",
+            boxShadow: "0 4px 24px rgba(22, 105, 169, 0.08), 0 1px 3px rgba(0,0,0,0.06)",
           }}
         >
           <div
@@ -298,18 +322,19 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              backgroundColor: "#F9FAFB",
             }}
           >
             <span style={{ fontSize: 11, color: textMuted, letterSpacing: "0.08em", textTransform: "uppercase" }}>
               Agreement Document
             </span>
             {!scrolled && (
-              <span style={{ fontSize: 11, color: gold, letterSpacing: "0.05em" }}>
+              <span style={{ fontSize: 11, color: blue, letterSpacing: "0.05em" }}>
                 ↓ Scroll to read all terms
               </span>
             )}
             {scrolled && (
-              <span style={{ fontSize: 11, color: "#7dd4a0" }}>
+              <span style={{ fontSize: 11, color: "#16a34a" }}>
                 ✓ All terms reviewed
               </span>
             )}
@@ -330,9 +355,6 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
             <div style={{ height: 24 }} />
           </div>
         </div>
-
-    
-
 
         <p style={{ textAlign: "center", color: textMuted, fontSize: 11, marginTop: 16, lineHeight: 1.6 }}>
           © {new Date().getFullYear()} Lasting Legacy Cleaners · Governed under the laws of the State of Indiana
