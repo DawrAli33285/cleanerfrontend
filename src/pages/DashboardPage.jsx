@@ -43,6 +43,10 @@ function StatusBadge({ status }) {
     bg = "#D1FAE5";
     color = "#065F46";
     border = "#A7F3D0";
+  }else if (status === "Denied") {
+    bg = "#FEE2E2";
+    color = "#991B1B";
+    border = "#FECACA";
   }
   return (
     <span
@@ -69,11 +73,13 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
     location: r.memorialLocation,
     pkg: r.packageType === "basic_annual" ? "Basic Annual $549" : "Premium Annual $749",
     status:
-      r.status === "pending_approval"
-        ? "Pending Approval"
-        : r.status === "approved"
-        ? "Approved"
-        : "Completed",
+    r.status === "pending_approval"
+      ? "Pending Approval"
+      : r.status === "approved"
+      ? "Approved"
+      : r.status === "denied"
+      ? "Denied"
+      : "Completed",
     date: new Date(r.createdAt).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -87,9 +93,11 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
       const { data } = await axios.get(`${BASE_URL}/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log(data)
+      console.log('data')
       const all = data.requests.map(mapRequest);
-      setActive(all.filter((r) => r.status !== "Completed"));
-      setCompleted(all.filter((r) => r.status === "Completed"));
+      setActive(all.filter((r) => r.status === "Pending Approval" || r.status === "Approved"));
+      setCompleted(all.filter((r) => r.status === "Completed" || r.status === "Denied"));
     } catch (err) {
       toastError("Failed to load", "Could not fetch requests. Please refresh.");
     } finally {
@@ -364,7 +372,7 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
             style={{ borderColor: "#E5EAF0" }}
           >
             <h2 className="text-lg font-semibold" style={{ color: "#1A1A2E" }}>
-              Completed / Inactive Requests
+            Completed / Denied Requests
             </h2>
             <span className="text-xs font-medium" style={{ color: "#6B7280" }}>
               {completed.length} total
