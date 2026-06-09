@@ -67,6 +67,15 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
   const [submitting, setSubmitting] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
 
+
+  const BILLING_LINKS = {
+    basic_annual: "https://link.waveapps.com/7nvtce-ks963v",
+    premium_annual: "https://link.waveapps.com/6s87u2-fhf6gt",
+  };
+
+  const [showPayment, setShowPayment] = useState(false);
+const [submittedPkg, setSubmittedPkg] = useState(null);
+
   const mapRequest = (r) => ({
     id: r.id,
     customer: r.customerName,
@@ -133,9 +142,12 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
       await axios.post(`${BASE_URL}/create-request`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      const selectedPkg = pkg; 
       toastSuccess("Request submitted", "Your request is pending approval.");
       setShowNew(false);
       setSelectedPhotos([]);
+      setSubmittedPkg(selectedPkg);
+      setShowPayment(true);
       fetchRequests();
     } catch (err) {
       const msg = err?.response?.data?.message || "Failed to submit request.";
@@ -742,6 +754,91 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
           </div>
         </div>
       )}
+      {/* Payment Modal */}
+{showPayment && submittedPkg && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    style={{ backgroundColor: "rgba(26, 26, 46, 0.5)", backdropFilter: "blur(4px)" }}
+  >
+    <div
+      className="rounded-2xl w-full max-w-md"
+      style={{
+        backgroundColor: "#FFFFFF",
+        border: "1px solid #E5EAF0",
+        boxShadow: "0 20px 60px rgba(22, 105, 169, 0.2), 0 4px 12px rgba(0,0,0,0.1)",
+      }}
+    >
+      {/* Green success bar */}
+      <div
+        className="h-1.5 rounded-t-2xl"
+        style={{ background: "linear-gradient(90deg, #059669, #10B981)" }}
+      />
+
+      <div className="px-8 py-8 text-center">
+        {/* Checkmark icon */}
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+          style={{ backgroundColor: "#D1FAE5" }}
+        >
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4L19 7" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+
+        <h3 className="text-xl font-semibold mb-2" style={{ color: "#1A1A2E" }}>
+          Request Submitted!
+        </h3>
+        <p className="text-sm mb-6" style={{ color: "#6B7280" }}>
+          Complete your purchase to activate the restoration service.
+        </p>
+
+        {/* Package box */}
+        <div
+          className="rounded-xl p-5 mb-6 text-left"
+          style={{
+            backgroundColor: "#F0F7FF",
+            border: "1px solid #BFDBFE",
+          }}
+        >
+          <div className="text-xs font-medium mb-1" style={{ color: "#6B7280" }}>
+            Selected Package
+          </div>
+          <div className="text-lg font-semibold" style={{ color: "#1A1A2E" }}>
+            {submittedPkg === "basic_annual" ? "Basic Annual" : "Premium Annual"}
+          </div>
+          <div className="text-2xl font-bold mt-1" style={{ color: "#1669A9" }}>
+            {submittedPkg === "basic_annual" ? "$549" : "$749"}
+            <span className="text-sm font-normal ml-1" style={{ color: "#6B7280" }}>/year</span>
+          </div>
+        </div>
+
+        {/* Pay Now button */}
+        <a
+          href={BILLING_LINKS[submittedPkg]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full h-12 rounded-lg text-sm font-semibold text-white mb-3 transition"
+          style={{ backgroundColor: "#1669A9", textDecoration: "none" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1E90CF")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1669A9")}
+        >
+          Pay Now →
+        </a>
+
+        {/* Skip link */}
+        <button
+          onClick={() => setShowPayment(false)}
+          className="w-full text-sm transition"
+          style={{ color: "#6B7280" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#1669A9")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
+        >
+          I'll pay later
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
