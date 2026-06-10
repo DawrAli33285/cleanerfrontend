@@ -1,14 +1,8 @@
 import { useState } from "react";
 
 /**
- * Lasting Legacy Cleaners — Terms & Conditions
- * Matches LoginPage theme:
- *  - Background: #F5F7FA
- *  - Card:       #FFFFFF
- *  - Primary:    #1669A9
- *  - Dark:       #1A1A2E
- *  - Text:       #374151 / #6B7280
- *  - Accent:     #1E90CF
+ * Lasting Legacy Cleaners — Legal Pages (Privacy Policy + Messaging Terms)
+ * Combined single-page with tab navigation.
  */
 
 const blue = "#1669A9";
@@ -21,70 +15,187 @@ const textPrimary = "#1A1A2E";
 const textSecondary = "#6B7280";
 const textMuted = "#9CA3AF";
 
-const sections = [
+// ─── Privacy Policy Sections ────────────────────────────────────────────────
+const privacySections = [
   {
-    num: "01",
-    title: "Services Provided",
-    body: `Lasting Legacy Cleaners provides memorial preservation and restoration-related services including, but not limited to: headstone refinishing, memorial marker cleaning, bronze and granite cleaning, soft-wash exterior cleaning, memorial restoration services, and cemetery plot appearance services.\n\nServices are performed based on the condition of the memorial at the time of inspection and service.`,
+    id: "01",
+    title: "About Us",
+    content: [
+      `"We", "us" or "our" means Lasting Legacy Cleaners, with its principal place of business located at 12175 Visionary Way Fishers, IN 46038-3069.`,
+    ],
   },
   {
-    num: "02",
-    title: "Customer Authorization",
-    body: `Customer confirms that they are authorized to request services for the memorial, marker, monument, or plot associated with this request.\n\nCustomer further confirms they have obtained any necessary permissions required by the cemetery, memorial park, funeral home, property owner, or governing organization prior to service.`,
+    id: "02",
+    title: "About This Privacy Policy",
+    content: [
+      `Your privacy is important to us, so we've developed this Privacy Policy, which explains how we collect, use, and disclose your personal information. We collect personal information when you use our website(s), mobile apps, and other online and offline products, services, and experiences (collectively, the "Services"). Please take a moment to read through this Policy in its entirety.`,
+      `If you have any questions, concerns, or complaints regarding this Privacy Policy or how we use your personal information, please contact us via email at roosevelt@lastinglegacycleaners.com.`,
+    ],
   },
   {
-    num: "03",
-    title: "Condition of Memorials",
-    body: `Customer understands and acknowledges that many memorial markers, headstones, monuments, bronze plaques, and related structures are aged, weathered, fragile, cracked, unstable, deteriorated, previously repaired, or structurally compromised due to age, environmental exposure, foundation shifting, water damage, oxidation, existing fractures, prior restoration attempts, or natural deterioration.\n\nCustomer acknowledges that the true structural condition of a memorial may not be fully visible prior to cleaning or restoration.`,
+    id: "03",
+    title: "What Personal Information We Collect and How We Collect It",
+    content: [`We collect personal information that you provide directly to us:`],
+    bullets: [
+      `Contact information. If you sign up to receive our newsletter, emails, or text messages from us, we will collect your name, email address, mailing address, phone number, and any other information needed to contact you about the Services.`,
+      `Payment information. To order products or services through the Services, you will need to provide us with payment information (like your bank account or credit card information). Please note that your financial information is collected and stored by a third-party payment processing company. Use and storage of that information is governed by the third-party payment processor's applicable privacy policy.`,
+      `Survey information. You may provide us with other personal information when you fill in a form, respond to our surveys or questionnaires, provide us with feedback, participate in promotions, or use other features of the Services.`,
+      `Communications information. We may also collect other information during our communications with you, including information that you send to us when interacting with our customer service agents, or when you call us or send emails or text messages. This may include information about how you contacted us, your marketing preferences, and other information that you choose to share.`,
+    ],
   },
   {
-    num: "04",
-    title: "Limitation of Liability",
-    body: `Customer expressly agrees that Lasting Legacy Cleaners, its owners, employees, contractors, affiliates, agents, and representatives shall NOT be held liable for existing damage, hidden structural defects, cracking, chipping, fading, separation, loosening, foundation movement, structural instability, discoloration, lettering deterioration, oxidation exposure, material failure, breakage caused by pre-existing conditions, age-related deterioration, environmental damage, or any incidental or consequential damages.\n\nCustomer understands that restoration and cleaning efforts involve interaction with aged materials that may already be compromised. Services are performed at Customer's sole risk.`,
+    id: "04",
+    title: "How We Use Your Personal Information",
+    content: [`We use the personal information we collect for the following reasons:`],
+    bullets: [
+      `To send you our newsletter, or other information or marketing about our Services that we think may be of interest to you.`,
+      `To reply to your questions, inquiries, or customer service requests or to send you notices, updates, security alerts, or support and administrative messages.`,
+      `To provide you with information about the Services that you request from us or which we feel may interest you.`,
+      `To monitor and analyze trends, usage, and activities in connection with our Services and to improve the Services.`,
+      `To facilitate contests, sweepstakes and promotions, and to process entries and provide prizes and rewards.`,
+      `To detect, investigate and prevent fraudulent transactions and other illegal activities on the Services and to protect the rights and property of us and our customers.`,
+      `To carry out our obligations arising from any contracts entered into between you and us, including for billing and collection.`,
+    ],
+    footer: `We may also use your personal information to fulfill our obligations as set out by the applicable law, or to carry out any other purpose as described to you at the time your personal information was collected.`,
   },
   {
-    num: "05",
-    title: "Release of Memorial Parks & Funeral Homes",
-    body: `Customer agrees that any cemetery, memorial park, funeral home, church, property owner, or third-party location associated with the requested service shall be fully released from liability related to service performance, cleaning processes, restoration work, damage claims, structural issues, appearance outcomes, or service-related disputes.\n\nCustomer acknowledges that such entities are not responsible for the work performed by Lasting Legacy Cleaners.`,
+    id: "05",
+    title: "What Is Our Legal Basis for Processing?",
+    content: [
+      `In certain countries we are required to have a legal basis for collecting and using your personal information. Our legal basis will depend on the personal information concerned and the specific context in which we collect it. We will normally collect personal information from you only where we have your consent to do so, where we need your information to perform a contract with you, or where the processing is in our legitimate interests and not overridden by your fundamental rights. In some cases, we may also have a legal obligation to collect personal information from you or may otherwise need the personal information to protect your vital interests or those of another person.`,
+      `If you have questions about or need further information concerning the legal basis on which we collect and use your personal information, please contact us using the details provided in the "Contact Us" section below.`,
+    ],
   },
   {
-    num: "06",
-    title: "No Guarantee of Results",
-    body: `While Lasting Legacy Cleaners strives to provide professional and respectful restoration services, Customer understands that results may vary, certain stains or deterioration may be permanent, complete restoration may not be possible, color variations may occur, and weathered surfaces may respond differently to treatment.\n\nNo guarantee is made regarding exact appearance, restoration level, longevity, or preservation outcome.`,
+    id: "06",
+    title: "How We Share Your Personal Information",
+    content: [`We may share your personal information in the following ways:`],
+    bullets: [
+      `With vendors, consultants, and other service providers who process your personal information on our behalf when they provide services to us, for example data analytics, research, marketing, and financial services.`,
+      `In connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business by another company.`,
+    ],
+    footer: `We may be legally required to disclose or share your personal information without your consent in some circumstances, for example to comply with a court order or law enforcement. In such circumstances, we will only disclose your personal information if we have a good-faith belief that such sharing is required under applicable legal obligations.`,
   },
   {
-    num: "07",
-    title: "Weather & Access Delays",
-    body: `Services may be delayed or rescheduled due to weather conditions, cemetery restrictions, unsafe working conditions, access limitations, equipment issues, or seasonal limitations.\n\nSuch delays shall not constitute breach of service.`,
+    id: "07",
+    title: "Your Marketing Choices",
+    content: [
+      `When you sign up for a promotion like a sweepstakes, or subscribe to receive our newsletter or marketing/promotional messages, we use your personal information to help us decide which products, services, and offers may be of interest to you.`,
+      `We will send marketing messages to you if you have asked us to send you information, bought goods or services from us, or if you provided us with your details when you entered a competition or registered for a promotion. If you opt out of receiving marketing messages, we may still send you non-promotional emails. We will ask for your consent before we share your personal information with any third party for their direct marketing purposes.`,
+      `You may unsubscribe from marketing messages through a link we include on messages we send you. You can also ask us to stop sending you marketing messages at any time by contacting us at: roosevelt@lastinglegacycleaners.com.`,
+    ],
   },
   {
-    num: "08",
-    title: "Payment Terms",
-    body: `Customer agrees to pay all service fees associated with the approved order. Payments may be collected electronically before service begins unless otherwise agreed in writing.\n\nAll completed services are non-refundable unless otherwise determined solely by Lasting Legacy Cleaners.`,
+    id: "08",
+    title: "Retention of Your Data and Deletion",
+    content: [
+      `Your personal information will not be kept longer than is necessary for the specific purpose for which it was collected.`,
+      `When we decide how long we will keep your information we consider the amount, nature, and sensitivity of the personal information, the potential risk of harm from unauthorized use or disclosure, why we need it, and any relevant legal requirements (such as legal retention and destruction periods).`,
+      `The foregoing will, however, not prevent us from retaining any personal information if it is necessary to comply with our legal obligations, in order to file a legal claim or defend ourselves against a legal claim, or for evidential purposes.`,
+      `Details of retention periods for different aspects of your personal data are available from us on request by contacting us using the contact details provided under the "Contact Us" heading below.`,
+    ],
   },
   {
-    num: "09",
-    title: "Photo & Documentation Authorization",
-    body: `Customer authorizes Lasting Legacy Cleaners to take before-and-after photographs of memorials for service documentation, quality control, internal records, marketing materials, and educational or promotional purposes.\n\nNo personal family information will intentionally be disclosed.`,
+    id: "09",
+    title: "International Transfers",
+    content: [
+      `We will ensure that any transfer of personal information to countries outside of the United States will take place pursuant to the appropriate safeguards.`,
+    ],
   },
   {
-    num: "10",
-    title: "Indemnification",
-    body: `Customer agrees to indemnify, defend, and hold harmless Lasting Legacy Cleaners from any claims, demands, liabilities, damages, losses, or legal actions arising from pre-existing memorial conditions, structural failures, unauthorized service requests, third-party disputes, cemetery policy violations, or family disagreements regarding service authorization.`,
+    id: "10",
+    title: "Your Data Protection Rights",
+    content: [
+      `Depending on the circumstances, you may have some of the following rights under applicable data protection laws. To exercise any of them, please contact us using the details provided in the "Contact Us" section below.`,
+    ],
+    bullets: [
+      `You may access, correct, or request deletion of your personal information.`,
+      `You may object to processing of your personal information, ask us to restrict processing of your personal information, or request portability of your personal information (i.e. your data to be transferred in a readable and standardized format).`,
+      `If we have collected and processed your personal information with your consent, then you can withdraw your consent at any time.`,
+    ],
+    footer: `We respond to all requests we receive from individuals wishing to exercise their data protection rights in accordance with applicable data protection laws. You may also have the right to complain to a supervisory authority about our collection and use of your personal data. For more information, please contact your local supervisory authority.`,
   },
   {
-    num: "11",
-    title: "Electronic Signature Consent",
-    body: `Customer agrees that electronic signatures, checkboxes, typed acknowledgements, and digital approvals shall be legally binding and enforceable to the fullest extent permitted by law.\n\nCustomer acknowledges that electronic acceptance constitutes full agreement to these Terms & Conditions.`,
+    id: "11",
+    title: "Changes to This Privacy Policy",
+    content: [
+      `From time to time, we have the right to modify this Privacy Policy. We're likely to update this Privacy Policy in the future, and when we make changes, we will take appropriate measures to inform you, consistent with the significance of the changes we make. Please come back and check this page from time to time for the latest information on our privacy practices.`,
+    ],
   },
   {
-    num: "12",
-    title: "Governing Law",
-    body: `This Agreement shall be governed under the laws of the State of Indiana.\n\nAny disputes arising from this Agreement shall be resolved exclusively within the State of Indiana.`,
+    id: "12",
+    title: "Contact Us",
+    content: [
+      `The data controller of your personal information is Lasting Legacy Cleaners, with its principal place of business located at 12175 Visionary Way Fishers, IN 46038-3069.`,
+      `If you have questions or concerns about the information in this Privacy Policy, our handling of your personal information, or your choices and rights regarding such use, please do not hesitate to contact us:`,
+    ],
+    contact: true,
   },
 ];
 
-function Section({ num, title, body }) {
+// ─── Messaging Terms Sections ────────────────────────────────────────────────
+const messagingSections = [
+  {
+    id: "01",
+    title: "General",
+    content: [
+      `When you opt-in to the service, we will send you a message to confirm your signup.`,
+      `By opting into messages, you agree to receive recurring automated marketing and informational text messages from Lasting Legacy Cleaners. Automated messages may be sent using an automatic telephone dialing system to the mobile telephone number you provided when signing up or any other number that you designate.`,
+      `Message frequency varies, and additional mobile messages may be sent periodically based on your interaction with Lasting Legacy Cleaners. Lasting Legacy Cleaners reserves the right to alter the frequency of messages sent at any time to increase or decrease the total number of sent messages. Lasting Legacy Cleaners also reserves the right to change the short code or phone number or alphanumeric sender where messages are sent.`,
+      `Your usual message and data rates may apply. If you have any questions about your text plan or data plan, it is best to contact your mobile provider. Your mobile provider is not liable for delayed or undelivered messages.`,
+      `Your consent to receive marketing messages is not a condition of purchase.`,
+    ],
+  },
+  {
+    id: "02",
+    title: "Carriers",
+    content: [`Carriers are not liable for delayed or undelivered messages.`],
+  },
+  {
+    id: "03",
+    title: "Cancellation",
+    content: [
+      `Messages will provide instructions to unsubscribe either by texting STOP or through an included link. After you unsubscribe, we will send you a message to confirm that you have been unsubscribed and no more messages will be sent.`,
+      `If you would like to receive messages from Lasting Legacy Cleaners again, just sign up as you did the first time and Lasting Legacy Cleaners will start sending messages to you again.`,
+    ],
+    highlight: `Text STOP to unsubscribe at any time.`,
+  },
+  {
+    id: "04",
+    title: "Info & Support",
+    content: [
+      `For support regarding our services, email us at roosevelt@lastinglegacycleaners.com or, if supported, text "HELP" to our messages at any time and we will respond with instructions on how to unsubscribe.`,
+      `If we include a link in messages we send you from Lasting Legacy Cleaners, you may also access instructions on how to unsubscribe and our company information by following that link.`,
+    ],
+    contact: true,
+  },
+  {
+    id: "05",
+    title: "Transfer of Number",
+    content: [
+      `You agree that before changing your mobile number or transferring your mobile number to another individual, you will either reply "STOP" from the original number, unsubscribe using the link included in our messages (if one is provided), or notify us of your old number at roosevelt@lastinglegacycleaners.com.`,
+      `The duty to inform us based on the above events is a condition of using this service to receive messages.`,
+    ],
+  },
+  {
+    id: "06",
+    title: "Privacy",
+    content: [
+      `If you have any questions about your data or our privacy practices, please visit our Privacy Policy page or contact us directly at roosevelt@lastinglegacycleaners.com.`,
+    ],
+  },
+  {
+    id: "07",
+    title: "Messaging Terms Changes",
+    content: [
+      `We reserve the right to change or terminate our messaging program at any time. We also reserve the right to update these Messaging Terms at any time. Such changes will be effective immediately upon posting.`,
+      `If you do not agree to a change to these Messaging Terms, you should cancel your enrollment with our messaging program. Your continued enrollment following such changes shall constitute your acceptance of such changes.`,
+    ],
+  },
+];
+
+// ─── Shared Section Component ────────────────────────────────────────────────
+function Section({ id, title, content, bullets, footer, contact, highlight }) {
   return (
     <div
       style={{
@@ -105,7 +216,7 @@ function Section({ num, title, body }) {
           opacity: 0.7,
         }}
       >
-        {num}
+        {id}
       </div>
       <div style={{ flex: 1 }}>
         <div
@@ -120,7 +231,7 @@ function Section({ num, title, body }) {
         >
           {title}
         </div>
-        {body.split("\n\n").map((para, i) => (
+        {content.map((para, i) => (
           <p
             key={i}
             style={{
@@ -134,96 +245,140 @@ function Section({ num, title, body }) {
             {para}
           </p>
         ))}
+        {bullets && (
+          <ul style={{ margin: "12px 0 0", paddingLeft: 0, listStyle: "none" }}>
+            {bullets.map((item, i) => (
+              <li
+                key={i}
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  marginBottom: 8,
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: 13,
+                  color: textSecondary,
+                  lineHeight: 1.8,
+                }}
+              >
+                <span style={{ color: blue, fontWeight: 700, marginTop: 2, flexShrink: 0, fontSize: 10 }}>◆</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {footer && (
+          <p
+            style={{
+              color: textSecondary,
+              fontSize: 13,
+              lineHeight: 1.8,
+              margin: "12px 0 0",
+              fontFamily: "'Roboto', sans-serif",
+            }}
+          >
+            {footer}
+          </p>
+        )}
+        {highlight && (
+          <div
+            style={{
+              marginTop: 14,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 16px",
+              borderRadius: 8,
+              border: `1px solid ${blueBorder}`,
+              backgroundColor: blueDim,
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              color: blue,
+              letterSpacing: "0.03em",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="2" width="12" height="10" rx="2" stroke={blue} strokeWidth="1.2" />
+              <path d="M4 6h6M4 9h4" stroke={blue} strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+            {highlight}
+          </div>
+        )}
+        {contact && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: "16px 20px",
+              borderRadius: 10,
+              border: `1px solid ${blueBorder}`,
+              backgroundColor: blueDim,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: 14,
+                fontWeight: 600,
+                color: textPrimary,
+                marginBottom: 6,
+              }}
+            >
+              Lasting Legacy Cleaners
+            </div>
+            <div style={{ fontFamily: "'Roboto', sans-serif", fontSize: 13, color: textSecondary, lineHeight: 1.7 }}>
+              12175 Visionary Way · Fishers, IN 46038-3069
+            </div>
+            <a
+              href="mailto:roosevelt@lastinglegacycleaners.com"
+              style={{
+                display: "inline-block",
+                marginTop: 6,
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: 13,
+                color: blue,
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              roosevelt@lastinglegacycleaners.com
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-export default function TermsAndConditions({ onAccept, partnerName = "" }) {
-  const [scrolled, setScrolled] = useState(false);
-  const [checked, setChecked] = useState(false);
-  const [name, setName] = useState(partnerName);
-  const [submitted, setSubmitted] = useState(false);
+// ─── Tab content configs ─────────────────────────────────────────────────────
+const tabs = [
+  {
+    key: "privacy",
+    label: "Privacy Policy",
+    badge: "12 sections",
+    subtitle: "Effective Date: June 10, 2026",
+    description:
+      "This policy explains how Lasting Legacy Cleaners collects, uses, and protects your personal information when you use our services.",
+    docLabel: "Privacy Policy Document",
+    sections: privacySections,
+    showToc: true,
+  },
+  {
+    key: "messaging",
+    label: "Messaging Terms",
+    badge: "7 sections",
+    subtitle: "SMS & Text Message Program",
+    description:
+      "These Messaging Terms & Conditions govern your enrollment in text message communications from Lasting Legacy Cleaners.",
+    docLabel: "Messaging Terms Document",
+    sections: messagingSections,
+    showToc: false,
+  },
+];
 
-  const handleScroll = (e) => {
-    const el = e.target;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 40) {
-      setScrolled(true);
-    }
-  };
-
-  const canSign = scrolled && checked && name.trim().length > 0;
-
-  const handleSubmit = () => {
-    if (!canSign) return;
-    setSubmitted(true);
-    if (typeof onAccept === "function") onAccept({ name, date: new Date().toISOString() });
-  };
-
-  if (submitted) {
-    return (
-      <main
-        style={{
-          minHeight: "100vh",
-          backgroundColor: bg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "'Roboto', sans-serif",
-          padding: 24,
-        }}
-      >
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap');`}</style>
-        {/* Decorative top bar */}
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 4,
-            background: `linear-gradient(90deg, ${blue}, #1E90CF, ${blue})`,
-          }}
-        />
-        <div style={{ textAlign: "center", maxWidth: 420 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: "50%",
-              border: `1px solid ${blue}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 24px",
-              backgroundColor: blueDim,
-            }}
-          >
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M6 14l6 6 10-10" stroke={blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div
-            style={{
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 24,
-              fontWeight: 600,
-              color: textPrimary,
-              marginBottom: 10,
-            }}
-          >
-            Agreement Accepted
-          </div>
-          <p style={{ color: textSecondary, fontSize: 13, lineHeight: 1.7, margin: "0 0 8px" }}>
-            Thank you, <span style={{ color: blue, fontWeight: 500 }}>{name}</span>. Your electronic signature has been recorded.
-          </p>
-          <p style={{ color: textMuted, fontSize: 12, margin: 0 }}>
-            {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-          </p>
-        </div>
-      </main>
-    );
-  }
+// ─── Main Component ──────────────────────────────────────────────────────────
+export default function LegalPages() {
+  const [activeTab, setActiveTab] = useState("privacy");
+  const tab = tabs.find((t) => t.key === activeTab);
 
   return (
     <main
@@ -236,12 +391,12 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap');
-        .tc-scroll::-webkit-scrollbar { width: 4px; }
-        .tc-scroll::-webkit-scrollbar-track { background: transparent; }
-        .tc-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
-        .tc-check:hover { border-color: ${blue} !important; }
-        .tc-sign-btn:hover:not(:disabled) { background-color: #1E90CF !important; }
-        .tc-input:focus { outline: none; border-color: ${blue} !important; box-shadow: 0 0 0 3px rgba(22,105,169,0.12) !important; }
+        .lp-scroll::-webkit-scrollbar { width: 4px; }
+        .lp-scroll::-webkit-scrollbar-track { background: transparent; }
+        .lp-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+        .toc-link { transition: color 0.15s; }
+        .toc-link:hover { color: #1669A9 !important; }
+        .tab-btn { transition: all 0.18s ease; cursor: pointer; border: none; background: none; }
       `}</style>
 
       {/* Top accent line */}
@@ -249,8 +404,8 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
 
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px 60px" }}>
 
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
+        {/* ── Shared Header ── */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 20 }}>
             <svg width="40" height="40" viewBox="0 0 64 64" fill="none">
               <path d="M32 4L8 14v18c0 13 10.5 24.5 24 28 13.5-3.5 24-15 24-28V14L32 4z" stroke={blue} strokeWidth="1.5" fill="none" />
@@ -269,11 +424,94 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
                 Lasting Legacy Cleaners
               </div>
               <div style={{ fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: blue, marginTop: 2 }}>
-                Partner Agreement
+                Legal &amp; Privacy Documents
               </div>
             </div>
           </div>
 
+          {/* Company info strip */}
+          <div
+            style={{
+              display: "inline-flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "6px 20px",
+              padding: "10px 20px",
+              borderRadius: 10,
+              border: `1px solid ${border}`,
+              backgroundColor: surface,
+            }}
+          >
+            {[
+              { icon: "📍", label: "12175 Visionary Way, Fishers IN 46038" },
+              { icon: "✉️", label: "roosevelt@lastinglegacycleaners.com" },
+              { icon: "📞", label: "+1 (317) 970-3904" },
+            ].map(({ icon, label }) => (
+              <span key={label} style={{ fontSize: 11, color: textSecondary }}>
+                {icon} {label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Tab Bar ── */}
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            padding: 4,
+            backgroundColor: surface,
+            border: `1px solid ${border}`,
+            borderRadius: 14,
+            marginBottom: 24,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+          }}
+        >
+          {tabs.map((t) => {
+            const isActive = activeTab === t.key;
+            return (
+              <button
+                key={t.key}
+                className="tab-btn"
+                onClick={() => setActiveTab(t.key)}
+                style={{
+                  flex: 1,
+                  padding: "10px 16px",
+                  borderRadius: 10,
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: 13,
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? surface : textSecondary,
+                  backgroundColor: isActive ? blue : "transparent",
+                  boxShadow: isActive ? "0 2px 8px rgba(22,105,169,0.25)" : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                {t.label}
+                <span
+                  style={{
+                    fontSize: 10,
+                    padding: "1px 7px",
+                    borderRadius: 999,
+                    backgroundColor: isActive ? "rgba(255,255,255,0.2)" : blueDim,
+                    color: isActive ? surface : blue,
+                    fontWeight: 500,
+                    fontFamily: "'Roboto', sans-serif",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  {t.badge}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Tab subtitle + description ── */}
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div
             style={{
               display: "inline-flex",
@@ -287,32 +525,75 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
               color: blue,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              marginBottom: 20,
+              marginBottom: 12,
             }}
           >
-            <span>⬡</span> Terms &amp; Conditions of Service
+            <span>⬡</span> {tab.subtitle}
           </div>
-
-          <p style={{ color: textMuted, fontSize: 12, margin: 0 }}>
-            Effective Date: &nbsp;
-            <span style={{ color: textSecondary }}>
-              {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-            </span>
-          </p>
-          <p style={{ color: textSecondary, fontSize: 12.5, marginTop: 10, lineHeight: 1.7, maxWidth: 540, margin: "10px auto 0" }}>
-            These Terms &amp; Conditions ("Agreement") are entered into between Lasting Legacy Cleaners ("Company") and the customer identified in the service request ("Customer"). By electronically signing this Agreement, Customer acknowledges that they have read, understood, and agreed to all terms below.
+          <p style={{ color: textSecondary, fontSize: 12.5, lineHeight: 1.7, maxWidth: 540, margin: "0 auto" }}>
+            {tab.description}
           </p>
         </div>
 
-        {/* Scrollable terms box */}
+        {/* ── Table of Contents (Privacy only) ── */}
+        {tab.showToc && (
+          <div
+            style={{
+              backgroundColor: surface,
+              border: `1px solid ${border}`,
+              borderRadius: 16,
+              padding: "20px 28px",
+              marginBottom: 24,
+              boxShadow: "0 4px 24px rgba(22, 105, 169, 0.08), 0 1px 3px rgba(0,0,0,0.06)",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: textMuted,
+                marginBottom: 14,
+              }}
+            >
+              Contents
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px" }}>
+              {tab.sections.map((s) => (
+                <a
+                  key={s.id}
+                  href={`#section-${s.id}`}
+                  className="toc-link"
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 8,
+                    fontSize: 12.5,
+                    color: textSecondary,
+                    textDecoration: "none",
+                    padding: "4px 0",
+                    fontFamily: "'Roboto', sans-serif",
+                  }}
+                >
+                  <span style={{ fontFamily: "monospace", fontSize: 10, color: blue, opacity: 0.7, flexShrink: 0 }}>{s.id}</span>
+                  <span>{s.title}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Document Card ── */}
         <div
           style={{
             backgroundColor: surface,
             border: `1px solid ${border}`,
             borderRadius: 16,
-            marginBottom: 24,
             overflow: "hidden",
             boxShadow: "0 4px 24px rgba(22, 105, 169, 0.08), 0 1px 3px rgba(0,0,0,0.06)",
+            marginBottom: 24,
           }}
         >
           <div
@@ -326,38 +607,24 @@ export default function TermsAndConditions({ onAccept, partnerName = "" }) {
             }}
           >
             <span style={{ fontSize: 11, color: textMuted, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Agreement Document
+              {tab.docLabel}
             </span>
-            {!scrolled && (
-              <span style={{ fontSize: 11, color: blue, letterSpacing: "0.05em" }}>
-                ↓ Scroll to read all terms
-              </span>
-            )}
-            {scrolled && (
-              <span style={{ fontSize: 11, color: "#16a34a" }}>
-                ✓ All terms reviewed
-              </span>
-            )}
+            <span style={{ fontSize: 11, color: textMuted }}>
+              {tab.sections.length} sections
+            </span>
           </div>
-
-          <div
-            className="tc-scroll"
-            onScroll={handleScroll}
-            style={{
-              maxHeight: 460,
-              overflowY: "auto",
-              padding: "0 28px",
-            }}
-          >
-            {sections.map((s) => (
-              <Section key={s.num} {...s} />
+          <div style={{ padding: "0 28px" }}>
+            {tab.sections.map((s) => (
+              <div key={s.id} id={`section-${s.id}`}>
+                <Section {...s} />
+              </div>
             ))}
             <div style={{ height: 24 }} />
           </div>
         </div>
 
-        <p style={{ textAlign: "center", color: textMuted, fontSize: 11, marginTop: 16, lineHeight: 1.6 }}>
-          © {new Date().getFullYear()} Lasting Legacy Cleaners · Governed under the laws of the State of Indiana
+        <p style={{ textAlign: "center", color: textMuted, fontSize: 11, lineHeight: 1.6 }}>
+          © {new Date().getFullYear()} Lasting Legacy Cleaners · 12175 Visionary Way, Fishers, IN 46038-3069
         </p>
       </div>
     </main>

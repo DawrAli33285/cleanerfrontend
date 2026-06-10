@@ -308,7 +308,7 @@ export default function RegistrationPage({ onSuccess }) {
                   Terms
                 </a>{" "}
                 and{" "}
-                <a href="/terms" style={{ color: "#1669A9" }} onMouseEnter={(e) => (e.currentTarget.style.color = "#1E90CF")} onMouseLeave={(e) => (e.currentTarget.style.color = "#1669A9")}>
+                <a href="/app/terms" style={{ color: "#1669A9" }} onMouseEnter={(e) => (e.currentTarget.style.color = "#1E90CF")} onMouseLeave={(e) => (e.currentTarget.style.color = "#1669A9")}>
                   Privacy Policy
                 </a>
                 .
