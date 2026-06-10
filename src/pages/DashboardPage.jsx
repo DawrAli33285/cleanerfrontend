@@ -15,6 +15,10 @@ import { useToast } from "../components/toast";
  *  - Text:       #333333 / #6B7280
  *  - Accent:     #1E90CF
  */
+const BILLING_LINKS = {
+  basic_annual: "https://link.waveapps.com/6s87u2-fhf6gt",
+  premium_annual: "https://link.waveapps.com/7nvtce-ks963v",
+};
 
 function Logo({ size = 64 }) {
   return (
@@ -68,10 +72,6 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
   const [selectedPhotos, setSelectedPhotos] = useState([]);
 
 
-  const BILLING_LINKS = {
-    basic_annual: "https://link.waveapps.com/7nvtce-ks963v",
-    premium_annual: "https://link.waveapps.com/6s87u2-fhf6gt",
-  };
 
   const [showPayment, setShowPayment] = useState(false);
 const [submittedPkg, setSubmittedPkg] = useState(null);
@@ -142,7 +142,8 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
       await axios.post(`${BASE_URL}/create-request`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const selectedPkg = pkg; 
+      const selectedPkg = pkg;
+      console.log("pkg selected:", selectedPkg, "→ link:", BILLING_LINKS[selectedPkg]);
       toastSuccess("Request submitted", "Your request is pending approval.");
       setShowNew(false);
       setSelectedPhotos([]);
