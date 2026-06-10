@@ -206,8 +206,8 @@ export default function RegistrationPage({ onSuccess }) {
             Request Partner Access
           </h1>
           <p className="mt-2 text-center text-sm" style={{ color: "#6B7280" }}>
-            Create an account to manage memorial restoration requests for{" "}
-            <span style={{ color: "#1669A9", fontWeight: 500 }}>Anderson Memorial Park</span>.
+            Create an account to manage memorial restoration requests
+           
           </p>
 
           {/* Divider */}
