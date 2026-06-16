@@ -17,6 +17,7 @@ import { ToastProvider } from './components/toast.jsx'
 import TermsAndConditions from './pages/TermnsAndConditions.jsx'
 import AccountPage from './pages/PartnerAccountPage.jsx'
 import ContactForm from './pages/ParnterSupportPage.jsx'
+import TeamMembers from './pages/AdminTeammembers.jsx'
 
 function Root() {
   // ── Partner auth ────────────────────────────────────────────────────────────
@@ -90,6 +91,14 @@ function Root() {
         element={
           adminToken
             ? <AdminDashboard token={adminToken} adminName={admin?.username} onLogout={handleAdminLogout} />
+            : <Navigate to="/admin" replace />
+        }
+      />
+       <Route
+        path="/admin/teammember"
+        element={
+          adminToken
+            ? <TeamMembers token={adminToken} adminName={admin?.username} onLogout={handleAdminLogout} />
             : <Navigate to="/admin" replace />
         }
       />

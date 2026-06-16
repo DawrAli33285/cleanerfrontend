@@ -150,11 +150,8 @@ function StatusMessage({ type, message }) {
 
 function Logo() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="6" fill="rgba(22,105,169,0.12)" />
-        <path d="M14 6l2 5h5l-4 3 1.5 5L14 16l-4.5 3 1.5-5-4-3h5z" fill="#1669A9" />
-      </svg>
+    <div className="flex items-center gap-3">
+    <img src="/app/cleanerlogo.jpg" alt="Lasting Legacy Cleaners" style={{ height: size, width: "auto", display: "block" }} />
     </div>
   );
 }
