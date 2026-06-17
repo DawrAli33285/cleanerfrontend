@@ -18,6 +18,7 @@ import TermsAndConditions from './pages/TermnsAndConditions.jsx'
 import AccountPage from './pages/PartnerAccountPage.jsx'
 import ContactForm from './pages/ParnterSupportPage.jsx'
 import TeamMembers from './pages/AdminTeammembers.jsx'
+import PartnerTeamMembers from './pages/Partnerteammember.jsx'
 
 function Root() {
   // ── Partner auth ────────────────────────────────────────────────────────────
@@ -72,6 +73,9 @@ function Root() {
       <Route path="/support" element={<ContactForm />} />
       <Route path='/account' element={ token
       ? <AccountPage token={token} onLogout={handleLogout} />
+      : <Navigate to="/" replace />}/>
+       <Route path='/partner-teammember' element={ token
+      ? <PartnerTeamMembers token={token} onLogout={handleLogout} />
       : <Navigate to="/" replace />}/>
       <Route
         path="/dashboard"

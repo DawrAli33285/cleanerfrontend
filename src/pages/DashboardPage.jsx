@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../baseurl";
 import { useToast } from "../components/toast";
+import PartnerTeammemberButton from "../components/partnerteammemberbutton";
 
 /**
  * Lasting Legacy Cleaners — Partner Dashboard Page
@@ -230,7 +231,10 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
         }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-          <Logo size={40} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
+            <Logo />
+         <PartnerTeammemberButton/>
+          </div>
           <div className="flex items-center gap-4 sm:gap-6">
             <span className="hidden sm:block text-sm" style={{ color: "#333333" }}>
               Welcome,{" "}

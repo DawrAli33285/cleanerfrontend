@@ -33,6 +33,27 @@ const STATUS_STYLES = {
   denied:           { bg: "rgba(220,38,38,0.08)",   color: "#DC2626", border: "rgba(220,38,38,0.25)",   label: "Denied" },
 };
 
+const PTM_STATUS_STYLES = {
+  pending:  { bg: "rgba(234,179,8,0.1)",   color: "#92400E", border: "rgba(234,179,8,0.4)",  label: "Pending Approval" },
+  approved: { bg: "rgba(22,105,169,0.08)", color: primary,   border: "rgba(22,105,169,0.3)", label: "Approved" },
+  denied:   { bg: "rgba(220,38,38,0.08)",  color: "#DC2626", border: "rgba(220,38,38,0.25)", label: "Denied" },
+};
+
+function PtmStatusBadge({ status }) {
+  const s = PTM_STATUS_STYLES[status] || { bg: "rgba(0,0,0,0.04)", color: textMuted, border: border, label: status };
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", borderRadius: 999,
+      border: `1px solid ${s.border}`, backgroundColor: s.bg, color: s.color,
+      padding: "3px 10px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+      letterSpacing: "0.04em",
+    }}>
+      {s.label}
+    </span>
+  );
+}
+
+
 function StatusBadge({ status }) {
   const s = STATUS_STYLES[status] || { bg: "rgba(0,0,0,0.04)", color: textMuted, border: border, label: status };
   return (
@@ -322,12 +343,32 @@ function EditPartnerModal({ partner, token, onClose, onSaved }) {
 }
 
 // ─── Request Detail Modal ─────────────────────────────────────────────────────
-function RequestDetailModal({ request, token, onClose, onStatusChange }) {
+// ─── Detail Row (stable component, defined outside modal to preserve identity across re-renders) ──
+function DetailRow({ label, value, children }) {
+  return (
+    <div style={{
+      display: "flex", gap: 12, padding: "10px 0",
+      borderBottom: `1px solid ${border}`, alignItems: "flex-start",
+    }}>
+      <div style={{ color: textMuted, fontSize: 11.5, textTransform: "uppercase", letterSpacing: "0.06em", minWidth: 130, paddingTop: 1 }}>{label}</div>
+      <div style={{ color: textPrimary, fontSize: 13.5, flex: 1, wordBreak: "break-word" }}>
+        {children !== undefined ? children : (value || <span style={{ color: textMuted }}>—</span>)}
+      </div>
+    </div>
+  );
+}
+
+// ─── Request Detail Modal ─────────────────────────────────────────────────────
+function RequestDetailModal({ request, token, onClose, onStatusChange, onPriceChange }) {
   const { success: ok, error: err } = useToast();
   const [updating, setUpdating] = useState(false);
   const [status, setStatus] = useState(request.status);
   const [documents, setDocuments] = useState([]);
   const [docsLoading, setDocsLoading] = useState(true);
+  const [price, setPrice] = useState(request.packagePrice);
+  const [priceInput, setPriceInput] = useState(String(request.packagePrice));
+  const [savingPrice, setSavingPrice] = useState(false);
+
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -360,17 +401,28 @@ function RequestDetailModal({ request, token, onClose, onStatusChange }) {
     } finally { setUpdating(false); }
   };
 
-  const Row = ({ label, value }) => (
-    <div style={{
-      display: "flex", gap: 12, padding: "10px 0",
-      borderBottom: `1px solid ${border}`, alignItems: "flex-start",
-    }}>
-      <div style={{ color: textMuted, fontSize: 11.5, textTransform: "uppercase", letterSpacing: "0.06em", minWidth: 130, paddingTop: 1 }}>{label}</div>
-      <div style={{ color: textPrimary, fontSize: 13.5, flex: 1, wordBreak: "break-word" }}>
-        {value || <span style={{ color: textMuted }}>—</span>}
-      </div>
-    </div>
-  );
+  const updatePrice = async () => {
+    const newPrice = parseFloat(priceInput);
+    if (isNaN(newPrice) || newPrice < 0) {
+      err("Invalid price", "Please enter a valid positive number.");
+      return;
+    }
+    try {
+      setSavingPrice(true);
+      await axios.patch(
+        `${BASE_URL}/admin/requests/${request.id}/price`,
+        { packagePrice: newPrice },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPrice(newPrice);
+      ok("Price updated", `Request #${request.id} price set to $${newPrice.toFixed(2)}.`);
+      if (typeof onPriceChange === "function") onPriceChange(request.id, newPrice);
+    } catch (e) {
+      console.log(e.message)
+      err("Update failed", e?.response?.data?.message || "Could not update price.");
+    } finally { setSavingPrice(false); }
+  };
+ 
 
   const getFileIcon = (filename = "") => {
     const ext = filename.split(".").pop().toLowerCase();
@@ -386,19 +438,41 @@ function RequestDetailModal({ request, token, onClose, onStatusChange }) {
       subtitle={`Submitted ${new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`}
       onClose={onClose}
     >
-      <Row label="Status" value={<StatusBadge status={status} />} />
-      <Row label="Customer" value={request.customerName} />
-      <Row label="Phone" value={request.customerPhone} />
-      <Row label="Email" value={request.customerEmail} />
-      <Row label="Location" value={request.memorialLocation} />
-      <Row label="Package" value={request.packageType === "basic_annual" ? "Basic Annual — $549" : "Premium Annual — $749"} />
-      <Row label="Price" value={`$${Number(request.packagePrice).toFixed(2)}`} />
-      <Row label="Partner ID" value={request.partnerId ? `#${request.partnerId}` : "—"} />
-      <Row label="Approved By" value={request.approvedBy} />
-      <Row label="Approved At" value={request.approvedAt ? new Date(request.approvedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
-      <Row label="Denied By" value={request.deniedBy} />
-      <Row label="Denied At" value={request.deniedAt ? new Date(request.deniedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
-      {request.notes && <Row label="Notes" value={request.notes} />}
+    <DetailRow label="Status" value={<StatusBadge status={status} />} />
+      <DetailRow label="Customer" value={request.customerName} />
+      <DetailRow label="Phone" value={request.customerPhone} />
+      <DetailRow label="Email" value={request.customerEmail} />
+      <DetailRow label="Location" value={request.memorialLocation} />
+      <DetailRow label="Package" value={request.packageType === "basic_annual" ? "Basic Annual — $549" : "Premium Annual — $749"} />
+      <DetailRow label="Price">
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ position: "relative", width: 140 }}>
+            <span style={{ position: "absolute", left: 12, top: 0, height: "100%", display: "flex", alignItems: "center", color: textMuted, fontSize: 13 }}>$</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={priceInput}
+              onChange={e => setPriceInput(e.target.value)}
+              style={{ ...inputStyle, height: 36, paddingLeft: 22, fontSize: 13 }}
+            />
+          </div>
+          <ActionBtn
+            onClick={updatePrice}
+            disabled={savingPrice || parseFloat(priceInput) === Number(price)}
+            style={{ fontSize: 12, padding: "8px 14px" }}
+          >
+            {savingPrice ? "Saving…" : "Save"}
+          </ActionBtn>
+        </div>
+      </DetailRow>
+      <DetailRow label="Partner ID" value={request.partnerId ? `#${request.partnerId}` : "—"} />
+      <DetailRow label="Approved By" value={request.approvedBy} />
+      <DetailRow label="Approved At" value={request.approvedAt ? new Date(request.approvedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
+      <DetailRow label="Denied By" value={request.deniedBy} />
+      <DetailRow label="Denied At" value={request.deniedAt ? new Date(request.deniedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null} />
+      {request.notes && <DetailRow label="Notes" value={request.notes} />}
+    
 
       {/* Documents */}
       <div style={{ marginTop: 20 }}>
@@ -526,6 +600,9 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
   const [deletePartner, setDeletePartner] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [uploadRequest, setUploadRequest] = useState(null);
+  const [partnerTeamMembers, setPartnerTeamMembers] = useState([]);
+  const [ptmLoading, setPtmLoading] = useState(true);
+  const [ptmActioningId, setPtmActioningId] = useState(null);
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -545,7 +622,17 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
     finally { setPartLoading(false); }
   }, [token]);
 
-  useEffect(() => { fetchRequests(); fetchPartners(); }, []);
+  const fetchPartnerTeamMembers = useCallback(async () => {
+    try {
+      setPtmLoading(true);
+      const { data } = await axios.get(`${BASE_URL}/admin/partner-team-members`, { headers: { Authorization: `Bearer ${token}` } });
+      setPartnerTeamMembers(data.partnerTeamMembers || []);
+    } catch { err("Error", "Failed to load partner team members."); }
+    finally { setPtmLoading(false); }
+  }, [token]);
+
+
+  useEffect(() => { fetchRequests(); fetchPartners(); fetchPartnerTeamMembers(); }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
@@ -569,6 +656,22 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
   const handleStatusChange = (id, newStatus) => {
     setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
   };
+
+  const handlePriceChange = (id, newPrice) => {
+    setRequests(prev => prev.map(r => r.id === id ? { ...r, packagePrice: newPrice } : r));
+  };
+
+  const handlePtmDecision = async (id, decision) => {
+    try {
+      setPtmActioningId(id);
+      await axios.patch(`${BASE_URL}/admin/partner-team-members/${id}/${decision}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      ok(decision === "approve" ? "Approved" : "Denied", `Team member request has been ${decision === "approve" ? "approved" : "denied"}.`);
+      setPartnerTeamMembers(prev => prev.map(m => m.id === id ? { ...m, status: decision === "approve" ? "approved" : "denied" } : m));
+    } catch (e) {
+      err("Failed", e?.response?.data?.message || `Could not ${decision} this request.`);
+    } finally { setPtmActioningId(null); }
+  };
+
 
   const filteredRequests = requests.filter(r => {
     const matchStatus = filterStatus === "all" || r.status === filterStatus;
@@ -660,10 +763,10 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
         
         </div>
 
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 22 }}>
+     {/* Tabs */}
+     <div style={{ display: "flex", gap: 8, marginBottom: 22 }}>
           <Tab label="Requests" active={tab === "requests"} onClick={() => setTab("requests")} count={requests.length} />
-          
+          <Tab label="Partner Team Members" active={tab === "partnerTeamMembers"} onClick={() => setTab("partnerTeamMembers")} count={partnerTeamMembers.length} />
         </div>
 
         {/* ══ REQUESTS TAB ══ */}
@@ -852,7 +955,72 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
       </main>
 
       {/* Modals */}
-      {selectedRequest && <RequestDetailModal request={selectedRequest} token={token} onClose={() => setSelectedRequest(null)} onStatusChange={handleStatusChange} />}
+      {tab === "partnerTeamMembers" && (
+          <div style={{ backgroundColor: surface, border: `1px solid ${border}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderTop: `3px solid ${primary}` }}>
+            <div style={{ padding: "14px 18px 13px", borderBottom: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#FAFBFC" }}>
+              <div style={{ color: textPrimary, fontSize: 15, fontWeight: 700 }}>Partner Team Members</div>
+              <span style={{ color: textMuted, fontSize: 12 }}>{partnerTeamMembers.length} total</span>
+            </div>
+
+            {ptmLoading ? (
+              <div style={{ padding: "48px 0", textAlign: "center", color: textMuted, fontSize: 13 }}>Loading partner team members…</div>
+            ) : partnerTeamMembers.length === 0 ? (
+              <div style={{ padding: "48px 0", textAlign: "center", color: textMuted, fontSize: 13 }}>No partner team member requests yet.</div>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                  <thead>
+                    <tr>
+                      <Th>ID</Th><Th>Email</Th><Th>Invited By</Th>
+                      <Th>Status</Th><Th>Created</Th><Th>Approved At</Th><Th>Action</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {partnerTeamMembers.map((m, i) => (
+                      <tr key={m.id} style={{ borderTop: `1px solid ${border}`, backgroundColor: i % 2 === 0 ? surface : "#FAFBFC" }}>
+                        <td style={{ padding: "13px 16px", color: textMuted, fontSize: 12 }}>#{m.id}</td>
+                        <td style={{ padding: "13px 16px", color: textPrimary, fontWeight: 600 }}>{m.partner?.email || "—"}</td>
+                        <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12 }}>{m.invitedByPartner?.email || "—"}</td>
+                        <td style={{ padding: "13px 16px" }}><PtmStatusBadge status={m.status} /></td>
+                        <td style={{ padding: "13px 16px", color: textSecondary, whiteSpace: "nowrap", fontSize: 12 }}>
+                          {new Date(m.createdAt || m.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </td>
+                        <td style={{ padding: "13px 16px", color: textSecondary, whiteSpace: "nowrap", fontSize: 12 }}>
+                          {m.approved_at || m.approvedAt
+                            ? new Date(m.approved_at || m.approvedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                            : <span style={{ color: textMuted }}>—</span>}
+                        </td>
+                        <td style={{ padding: "13px 16px" }}>
+                          {m.status === "pending" ? (
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <button
+                                disabled={ptmActioningId === m.id}
+                                onClick={() => handlePtmDecision(m.id, "approve")}
+                                style={btnGreen.base}
+                                onMouseEnter={e => Object.assign(e.currentTarget.style, btnGreen.enter)}
+                                onMouseLeave={e => Object.assign(e.currentTarget.style, btnGreen.leave)}
+                              >{ptmActioningId === m.id ? "…" : "Approve"}</button>
+                              <button
+                                disabled={ptmActioningId === m.id}
+                                onClick={() => handlePtmDecision(m.id, "deny")}
+                                style={btnRed.base}
+                                onMouseEnter={e => Object.assign(e.currentTarget.style, btnRed.enter)}
+                                onMouseLeave={e => Object.assign(e.currentTarget.style, btnRed.leave)}
+                              >{ptmActioningId === m.id ? "…" : "Deny"}</button>
+                            </div>
+                          ) : (
+                            <span style={{ color: textMuted, fontSize: 12 }}>—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      {selectedRequest && <RequestDetailModal request={selectedRequest} token={token} onClose={() => setSelectedRequest(null)} onStatusChange={handleStatusChange} onPriceChange={handlePriceChange} />}
       {editPartner && <EditPartnerModal partner={editPartner} token={token} onClose={() => setEditPartner(null)} onSaved={fetchPartners} />}
       {deletePartner && <ConfirmDeleteModal partner={deletePartner} loading={!!deletingId} onClose={() => setDeletePartner(null)} onConfirm={handleDeletePartner} />}
       {uploadRequest && (
@@ -867,6 +1035,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
             }
           }}
         />
+        
       )}
     </div>
   );
