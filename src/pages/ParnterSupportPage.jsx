@@ -148,7 +148,7 @@ function StatusMessage({ type, message }) {
   );
 }
 
-function Logo() {
+function Logo({ size = 64 }) {
   return (
     <div className="flex items-center gap-3">
     <img src="/app/cleanerlogo.jpg" alt="Lasting Legacy Cleaners" style={{ height: size, width: "auto", display: "block" }} />
