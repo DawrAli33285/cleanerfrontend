@@ -17,9 +17,10 @@ import PartnerTeammemberButton from "../components/partnerteammemberbutton";
  *  - Accent:     #1E90CF
  */
 const BILLING_LINKS = {
-  basic_annual: "https://link.waveapps.com/6s87u2-fhf6gt",
-  premium_annual: "https://link.waveapps.com/7nvtce-ks963v",
+  basic_annual: "https://link.waveapps.com/ac3v4f-u8yt5j",
+  premium_annual: "https://link.waveapps.com/nevqqr-aqztzq",
 };
+
 
 function Logo({ size = 64 }) {
   return (
@@ -103,7 +104,7 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
     id: r.id,
     customer: r.customerName,
     location: r.memorialLocation,
-    pkg: r.packageType === "basic_annual" ? "Basic Annual $549" : "Premium Annual $749",
+    pkg: r.packageType === "basic_annual" ? "Basic Annual $399" : "Premium Annual $574",
     status:
     r.status === "pending_approval"
       ? "Pending Approval"
@@ -161,7 +162,7 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
 
     const payload = new FormData();
     payload.append("packageType", pkg);
-    payload.append("packagePrice", pkg === "basic_annual" ? "549" : "749");
+    payload.append("packagePrice", pkg === "basic_annual" ? "399" : "574");
     payload.append("customerName", String(fd.get("customer") || ""));
     payload.append("customerPhone", String(fd.get("phone") || ""));
     payload.append("customerEmail", String(fd.get("email") || ""));
@@ -629,8 +630,8 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   >
-                    <option value="basic_annual">Basic Annual $549</option>
-                    <option value="premium_annual">Premium Annual $749</option>
+                    <option value="basic_annual">Basic Annual $399</option>
+                    <option value="premium_annual">Premium Annual $574</option>
                   </select>
                 </div>
 
@@ -852,34 +853,53 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
             {submittedPkg === "basic_annual" ? "Basic Annual" : "Premium Annual"}
           </div>
           <div className="text-2xl font-bold mt-1" style={{ color: "#1669A9" }}>
-            {submittedPkg === "basic_annual" ? "$549" : "$749"}
+          {submittedPkg === "basic_annual" ? "$399" : "$574"}
             <span className="text-sm font-normal ml-1" style={{ color: "#6B7280" }}>/year</span>
           </div>
         </div>
 
         {/* Pay Now button */}
-        <a
-          href={BILLING_LINKS[submittedPkg]}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full h-12 rounded-lg text-sm font-semibold text-white mb-3 transition"
-          style={{ backgroundColor: "#1669A9", textDecoration: "none" }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1E90CF")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1669A9")}
-        >
-          Pay Now →
-        </a>
+        <label className="flex items-start gap-3 text-left mb-4 cursor-pointer">
+          <input
+            type="checkbox"
+            id="renewal-agree"
+            onChange={(e) => {
+              document.getElementById("pay-now-btn").style.opacity = e.target.checked ? "1" : "0.4";
+              document.getElementById("pay-now-btn").style.pointerEvents = e.target.checked ? "auto" : "none";
+              document.getElementById("pay-later-btn").style.display = e.target.checked ? "block" : "none";
+            }}
+            className="mt-0.5 flex-shrink-0"
+            style={{ width: 16, height: 16, accentColor: "#1669A9" }}
+          />
+          <span className="text-xs" style={{ color: "#374151" }}>
+            I understand that this is an annual memorial restoration membership that will automatically renew each year using my payment method on file unless I cancel prior to the renewal date by contacting Lasting Legacy Cleaners or my participating memorial park.
+          </span>
+        </label>
 
-        {/* Skip link */}
-        <button
-          onClick={() => setShowPayment(false)}
-          className="w-full text-sm transition"
-          style={{ color: "#6B7280" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#1669A9")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
-        >
-          I'll pay later
-        </button>
+        <a
+         id="pay-now-btn"
+         href={BILLING_LINKS[submittedPkg]}
+         target="_blank"
+         rel="noopener noreferrer"
+         className="flex items-center justify-center gap-2 w-full h-12 rounded-lg text-sm font-semibold text-white mb-3 transition"
+         style={{ backgroundColor: "#1669A9", textDecoration: "none", opacity: "0.4", pointerEvents: "none" }}
+         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1E90CF")}
+         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1669A9")}
+       >
+         Pay Now →
+       </a>
+       
+       {/* Skip link */}
+       <button
+         id="pay-later-btn"
+         onClick={() => setShowPayment(false)}
+         className="w-full text-sm transition"
+         style={{ color: "#6B7280", display: "none" }}
+         onMouseEnter={(e) => (e.currentTarget.style.color = "#1669A9")}
+         onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
+       >
+         I'll pay later
+       </button>
       </div>
     </div>
   </div>

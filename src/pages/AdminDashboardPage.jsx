@@ -5,6 +5,7 @@ import { useToast } from "../components/toast";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import TeammemberButton from "../components/teamemberbutton";
+import PartnerSettingsModal from "../components/PartnerSettingsModal";
 
 // ─── Shared Design Tokens ────────────────────────────────────────────────────
 const primary = "#1669A9";
@@ -368,7 +369,7 @@ function RequestDetailModal({ request, token, onClose, onStatusChange, onPriceCh
   const [price, setPrice] = useState(request.packagePrice);
   const [priceInput, setPriceInput] = useState(String(request.packagePrice));
   const [savingPrice, setSavingPrice] = useState(false);
-
+  const [settingsPartner, setSettingsPartner] = useState(null);
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -598,6 +599,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
   const [partLoading, setPartLoading] = useState(true);
   const [editPartner, setEditPartner] = useState(null);
   const [deletePartner, setDeletePartner] = useState(null);
+ const [settingsPartner, setSettingsPartner] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [uploadRequest, setUploadRequest] = useState(null);
   const [partnerTeamMembers, setPartnerTeamMembers] = useState([]);
@@ -766,6 +768,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
      {/* Tabs */}
      <div style={{ display: "flex", gap: 8, marginBottom: 22 }}>
           <Tab label="Requests" active={tab === "requests"} onClick={() => setTab("requests")} count={requests.length} />
+          <Tab label="Partners" active={tab === "partners"} onClick={() => setTab("partners")} count={partners.length} />
           <Tab label="Partner Team Members" active={tab === "partnerTeamMembers"} onClick={() => setTab("partnerTeamMembers")} count={partnerTeamMembers.length} />
         </div>
 
@@ -931,6 +934,11 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
                           </td>
                           <td style={{ padding: "13px 16px" }}>
                             <div style={{ display: "flex", gap: 7 }}>
+                            <button onClick={() => setSettingsPartner(p)}
+                               style={btnBlue.base}
+                               onMouseEnter={e => Object.assign(e.currentTarget.style, btnBlue.enter)}
+                               onMouseLeave={e => Object.assign(e.currentTarget.style, btnBlue.leave)}
+                             >Settings</button>
                               <button onClick={() => setEditPartner(p)}
                                 style={btnGold.base}
                                 onMouseEnter={e => Object.assign(e.currentTarget.style, btnGold.enter)}
@@ -952,10 +960,8 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
             )}
           </div>
         )}
-      </main>
 
-      {/* Modals */}
-      {tab === "partnerTeamMembers" && (
+{tab === "partnerTeamMembers" && (
           <div style={{ backgroundColor: surface, border: `1px solid ${border}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderTop: `3px solid ${primary}` }}>
             <div style={{ padding: "14px 18px 13px", borderBottom: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#FAFBFC" }}>
               <div style={{ color: textPrimary, fontSize: 15, fontWeight: 700 }}>Partner Team Members</div>
@@ -1020,7 +1026,14 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
             )}
           </div>
         )}
+      </main>
+
+      
+
+      {/* Modals */}
+      
       {selectedRequest && <RequestDetailModal request={selectedRequest} token={token} onClose={() => setSelectedRequest(null)} onStatusChange={handleStatusChange} onPriceChange={handlePriceChange} />}
+      {settingsPartner && <PartnerSettingsModal partner={settingsPartner} token={token} onClose={() => setSettingsPartner(null)} />}
       {editPartner && <EditPartnerModal partner={editPartner} token={token} onClose={() => setEditPartner(null)} onSaved={fetchPartners} />}
       {deletePartner && <ConfirmDeleteModal partner={deletePartner} loading={!!deletingId} onClose={() => setDeletePartner(null)} onConfirm={handleDeletePartner} />}
       {uploadRequest && (
