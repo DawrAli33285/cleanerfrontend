@@ -599,22 +599,38 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
                 </div>
 
                 <div>
-                  <label
-                    className="block text-sm font-medium mb-2"
-                    style={{ color: "#374151" }}
-                  >
-                    Memorial Location
-                  </label>
-                  <input
-                    name="location"
-                    required
-                    placeholder="Anderson Memorial Park — Section, Plot"
-                    className="w-full h-12 px-4 rounded-lg text-sm transition"
-                    style={inputStyle}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                  />
-                </div>
+  <label
+    className="block text-sm font-medium mb-2"
+    style={{ color: "#374151" }}
+  >
+    Memorial Location
+  </label>
+  <select
+    name="location"
+    required
+    defaultValue=""
+    className="w-full h-12 px-4 rounded-lg text-sm transition"
+    style={inputStyle}
+    onFocus={handleInputFocus}
+    onBlur={handleInputBlur}
+  >
+    <option value="" disabled>Select a location…</option>
+    <option value="Flanner Buchanan - Carmel Funeral and Cremation">Flanner Buchanan - Carmel Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Decatur Township">Flanner Buchanan - Decatur Township</option>
+    <option value="Flanner Buchanan - Geist Funeral and Cremation">Flanner Buchanan - Geist Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Hamilton Memorial Park Funeral and Cremation">Flanner Buchanan - Hamilton Memorial Park Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Oaklawn Funeral and Cremation">Flanner Buchanan - Oaklawn Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Floral Park Funeral and Cremation">Flanner Buchanan - Floral Park Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Montcalm">Flanner Buchanan - Montcalm</option>
+    <option value="Flanner Buchanan - Speedway Funeral and Cremation">Flanner Buchanan - Speedway Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Washington Park North Funeral and Cremation">Flanner Buchanan - Washington Park North Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Washington Park East Funeral and Cremation">Flanner Buchanan - Washington Park East Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Broad Ripple Funeral and Cremation">Flanner Buchanan - Broad Ripple Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Zionsville Funeral and Cremation">Flanner Buchanan - Zionsville Funeral and Cremation</option>
+    <option value="Flanner Buchanan - Market Street">Flanner Buchanan - Market Street</option>
+    <option value="Washington Park Cemetery">Washington Park Cemetery</option>
+  </select>
+</div>
 
                 <div>
                   <label
