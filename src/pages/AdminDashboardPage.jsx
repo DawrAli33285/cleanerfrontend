@@ -589,6 +589,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
   })();
 
   const [requests, setRequests] = useState([]);
+  const [emailToggleId, setEmailToggleId] = useState(null);
   const [reqLoading, setReqLoading] = useState(true);
   const [emailRemindersEnabled, setEmailRemindersEnabled] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -666,6 +667,26 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
 
   const handlePriceChange = (id, newPrice) => {
     setRequests(prev => prev.map(r => r.id === id ? { ...r, packagePrice: newPrice } : r));
+  };
+
+  const handleTogglePartnerEmail = async (partner, nextValue) => {
+    try {
+      setEmailToggleId(partner.id);
+      await axios.patch(
+        `${BASE_URL}/admin/partners/${partner.id}/settings`,
+        { emailRemindersEnabled: nextValue },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPartners(prev => prev.map(p =>
+        p.id === partner.id
+          ? { ...p, partnershipSettings: { ...(p.partnershipSettings || {}), emailRemindersEnabled: nextValue } }
+          : p
+      ));
+      ok(nextValue ? "Reminders enabled" : "Reminders disabled",
+        `${partner.username} will ${nextValue ? "now" : "no longer"} receive reminder emails.`);
+    } catch (e) {
+      err("Update failed", e?.response?.data?.message || "Could not update email setting.");
+    } finally { setEmailToggleId(null); }
   };
 
   const handlePtmDecision = async (id, decision) => {
@@ -919,8 +940,8 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                  <thead>
-                    <tr><Th>ID</Th><Th>Username</Th><Th>Email</Th><Th>Role</Th><Th>Requests</Th><Th>Created</Th><Th>Actions</Th></tr>
+                <thead>
+                    <tr><Th>ID</Th><Th>Username</Th><Th>Email</Th><Th>Role</Th><Th>Email Reminders</Th><Th>Requests</Th><Th>Created</Th><Th>Actions</Th></tr>
                   </thead>
                   <tbody>
                     {partners.map((p, i) => {
@@ -931,12 +952,29 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
                           <td style={{ padding: "13px 16px", color: textPrimary, fontWeight: 600 }}>{p.username}</td>
                           <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12 }}>{p.email || <span style={{ color: textMuted }}>—</span>}</td>
                           <td style={{ padding: "13px 16px" }}>
+                          <td style={{ padding: "13px 16px" }}>
                             <span style={{
                               fontSize: 11, letterSpacing: "0.06em", padding: "3px 9px", borderRadius: 999,
                               backgroundColor: p.role === "admin" ? "rgba(22,105,169,0.1)" : "rgba(2,132,199,0.08)",
                               color: p.role === "admin" ? primary : "#0284C7",
                               border: `1px solid ${p.role === "admin" ? borderPrimary : "rgba(2,132,199,0.25)"}`,
                             }}>{p.role}</span>
+                          </td>
+                          <td style={{ padding: "13px 16px" }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                              <input
+                                type="checkbox"
+                                checked={p.partnershipSettings?.emailRemindersEnabled !== false}
+                                disabled={emailToggleId === p.id}
+                                onChange={(e) => handleTogglePartnerEmail(p, e.target.checked)}
+                                style={{ width: 16, height: 16, cursor: "pointer", accentColor: primary }}
+                              />
+                              <span style={{ fontSize: 11.5, color: textMuted }}>
+                                {emailToggleId === p.id ? "Saving…" : (p.partnershipSettings?.emailRemindersEnabled !== false ? "On" : "Off")}
+                              </span>
+                            </label>
+                          </td>
+                          <td style={{ padding: "13px 16px", color: textSecondary }}>{reqCount}</td>
                           </td>
                           <td style={{ padding: "13px 16px", color: textSecondary }}>{reqCount}</td>
                           <td style={{ padding: "13px 16px", color: textSecondary, fontSize: 12, whiteSpace: "nowrap" }}>
