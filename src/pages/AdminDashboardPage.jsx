@@ -738,8 +738,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-              <span style={{ color: textMuted, fontSize: 12 }}>Email reminders</span>
-              
+            
             </label>
             <span style={{ color: textMuted, fontSize: 12.5 }}>
               Signed in as <span style={{ color: primary, fontWeight: 600 }}>{displayName}</span>
