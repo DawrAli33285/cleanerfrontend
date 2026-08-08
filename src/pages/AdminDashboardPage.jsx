@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import TeammemberButton from "../components/teamemberbutton";
 import PartnerSettingsModal from "../components/PartnerSettingsModal";
 
-// ─── Shared Design Tokens ────────────────────────────────────────────────────
 const primary = "#1669A9";
 const primaryHover = "#1E90CF";
 const bg = "#F5F7FA";
@@ -26,7 +25,7 @@ function Logo({ size = 64 }) {
     </div>
   );
 }
-// ─── Status Badge ─────────────────────────────────────────────────────────────
+
 const STATUS_STYLES = {
   pending_approval: { bg: "rgba(234,179,8,0.1)",   color: "#92400E", border: "rgba(234,179,8,0.4)",    label: "Pending Approval" },
   approved:         { bg: "rgba(22,105,169,0.08)",  color: primary,   border: "rgba(22,105,169,0.3)",   label: "Approved" },
@@ -69,7 +68,6 @@ function StatusBadge({ status }) {
   );
 }
 
-// ─── Pill Tab ─────────────────────────────────────────────────────────────────
 function Tab({ label, active, onClick, count }) {
   return (
     <button onClick={onClick} style={{
@@ -592,6 +590,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
 
   const [requests, setRequests] = useState([]);
   const [reqLoading, setReqLoading] = useState(true);
+  const [emailRemindersEnabled, setEmailRemindersEnabled] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQ, setSearchQ] = useState("");
@@ -731,9 +730,33 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
            <TeammemberButton/>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+              <span style={{ color: textMuted, fontSize: 12 }}>Email reminders</span>
+              <input
+                type="checkbox"
+                checked={emailRemindersEnabled}
+                onChange={async (e) => {
+                  const enabled = e.target.checked;
+                  setEmailRemindersEnabled(enabled);
+                  try {
+                    await axios.patch(
+                      `${BASE_URL}/admin/settings/email-reminders`,
+                      { enabled },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    ok("Updated", `Email reminders ${enabled ? "enabled" : "disabled"}.`);
+                  } catch (e) {
+                    setEmailRemindersEnabled(!enabled);
+                    err("Failed", "Could not update email reminder setting.");
+                  }
+                }}
+              />
+            </label>
             <span style={{ color: textMuted, fontSize: 12.5 }}>
               Signed in as <span style={{ color: primary, fontWeight: 600 }}>{displayName}</span>
             </span>
+            </div>
             <button
               onClick={handleLogout}
               style={{ background: "none", border: `1px solid ${border}`, color: textMuted, borderRadius: 8, padding: "7px 16px", fontSize: 12.5, cursor: "pointer", transition: "all .2s" }}
