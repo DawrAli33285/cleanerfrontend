@@ -633,8 +633,14 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
   }, [token]);
 
 
-  useEffect(() => { fetchRequests(); fetchPartners(); fetchPartnerTeamMembers(); }, []);
+  const fetchEmailReminderSetting = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${BASE_URL}/admin/settings/email-reminders`, { headers: { Authorization: `Bearer ${token}` } });
+      setEmailRemindersEnabled(!!data.emailRemindersEnabled);
+    } catch {  }
+  }, [token]);
 
+  useEffect(() => { fetchRequests(); fetchPartners(); fetchPartnerTeamMembers(); fetchEmailReminderSetting(); }, []);
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("admin");
