@@ -739,25 +739,7 @@ export default function AdminDashboard({ token, adminName, onLogout }) {
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
               <span style={{ color: textMuted, fontSize: 12 }}>Email reminders</span>
-              <input
-                type="checkbox"
-                checked={emailRemindersEnabled}
-                onChange={async (e) => {
-                  const enabled = e.target.checked;
-                  setEmailRemindersEnabled(enabled);
-                  try {
-                    await axios.patch(
-                      `${BASE_URL}/admin/settings/email-reminders`,
-                      { enabled },
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    ok("Updated", `Email reminders ${enabled ? "enabled" : "disabled"}.`);
-                  } catch (e) {
-                    setEmailRemindersEnabled(!enabled);
-                    err("Failed", "Could not update email reminder setting.");
-                  }
-                }}
-              />
+              
             </label>
             <span style={{ color: textMuted, fontSize: 12.5 }}>
               Signed in as <span style={{ color: primary, fontWeight: 600 }}>{displayName}</span>
