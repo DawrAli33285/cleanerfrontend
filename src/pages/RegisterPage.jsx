@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { BASE_URL } from "../baseurl";
 import { useToast } from "../components/toast";
@@ -117,6 +117,32 @@ export default function RegistrationPage({ onSuccess }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captchaRef = useRef(null);
+
+  useEffect(() => {
+    const renderCaptcha = () => {
+      if (window.grecaptcha && window.grecaptcha.render && captchaRef.current && captchaRef.current.childElementCount === 0) {
+        window.grecaptcha.render(captchaRef.current, {
+          sitekey: "6LcicX0tAAAAACH3GmVbziwFeQ9Mo2ZAyIbV3XtN", // <-- replace with your actual site key
+          callback: (token) => setCaptchaToken(token),
+          "expired-callback": () => setCaptchaToken(""),
+        });
+      }
+    };
+
+    if (window.grecaptcha && window.grecaptcha.render) {
+      renderCaptcha();
+    } else {
+      const interval = setInterval(() => {
+        if (window.grecaptcha && window.grecaptcha.render) {
+          renderCaptcha();
+          clearInterval(interval);
+        }
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -134,8 +160,11 @@ export default function RegistrationPage({ onSuccess }) {
       return "Passwords do not match.";
     if (!form.agree)
       return "Please agree to the Terms and Privacy Policy.";
+    if (!captchaToken)
+      return "Please complete the reCAPTCHA verification.";
     return "";
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -151,17 +180,26 @@ export default function RegistrationPage({ onSuccess }) {
         fullName: form.fullName,
         organization: form.organization,
         phone: form.phone,
+        captchaToken,
       };
       const { data } = await axios.post(`${BASE_URL}/register`, payload);
       const successMsg = data.message || "Your access request has been submitted. Our team will review and contact you shortly.";
       setSuccess(successMsg);
       toastSuccess("Account Created", successMsg);
       setForm({ fullName: "", organization: "", email: "", phone: "", password: "", confirmPassword: "", agree: false });
+      setCaptchaToken("");
+      if (window.grecaptcha && captchaRef.current) {
+        window.grecaptcha.reset(captchaRef.current);
+      }
       if (typeof onSuccess === "function") onSuccess(data);
     } catch (axiosErr) {
       const msg = axiosErr?.response?.data?.message || "We couldn't complete your registration. Please try again.";
       setError(msg);
       toastError("Registration Failed", msg);
+      setCaptchaToken("");
+      if (window.grecaptcha && captchaRef.current) {
+        window.grecaptcha.reset(captchaRef.current);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -310,6 +348,12 @@ export default function RegistrationPage({ onSuccess }) {
                 </a>
                 .
               </label>
+            </div>
+
+            {/* Submit */}
+           {/* reCAPTCHA */}
+           <div className="pt-1 flex justify-center">
+              <div ref={captchaRef} />
             </div>
 
             {/* Submit */}
