@@ -97,9 +97,33 @@ export default function DashboardPage({ partnerName = "Partner", token, onLogout
   const [submitting, setSubmitting] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
 
-
+  const [submittedRequestId, setSubmittedRequestId] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
 const [submittedPkg, setSubmittedPkg] = useState(null);
+
+// Add near submitNewRequest
+const [paySending, setPaySending] = useState(false);
+
+
+const sendPaymentRequest = async () => {
+  if (!submittedPkg || !submittedRequestId) return;
+  try {
+    setPaySending(true);
+    await axios.post(
+      `${BASE_URL}/send-payment-request`,
+      { packageType: submittedPkg, requestId: submittedRequestId },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    toastSuccess("Sent", "Payment request sent to our billing team.");
+    setShowPayment(false);
+  } catch (err) {
+    const msg = err?.response?.data?.message || "Failed to send payment request.";
+    toastError("Something went wrong", msg);
+  } finally {
+    setPaySending(false);
+  }
+};
+
 
   const mapRequest = (r) => ({
     id: r.id,
@@ -160,7 +184,7 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const pkg = String(fd.get("pkg") || "basic_annual");
-
+  
     const payload = new FormData();
     payload.append("packageType", pkg);
     payload.append("packagePrice", pkg === "basic_annual" ? "549" : "749");
@@ -170,18 +194,18 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
     payload.append("memorialLocation", String(fd.get("location") || ""));
     payload.append("notes", String(fd.get("notes") || ""));
     selectedPhotos.forEach((file) => payload.append("photos", file));
-
+  
     try {
       setSubmitting(true);
-      await axios.post(`${BASE_URL}/create-request`, payload, {
+      const { data } = await axios.post(`${BASE_URL}/create-request`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const selectedPkg = pkg;
-      console.log("pkg selected:", selectedPkg, "→ link:", BILLING_LINKS[selectedPkg]);
       toastSuccess("Request submitted", "Your request is pending approval.");
       setShowNew(false);
       setSelectedPhotos([]);
       setSubmittedPkg(selectedPkg);
+      setSubmittedRequestId(data.request?.id ?? data.id); // adjust to match your actual response shape
       setShowPayment(true);
       fetchRequests();
     } catch (err) {
@@ -191,6 +215,7 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
       setSubmitting(false);
     }
   };
+  
 
   const inputStyle = {
     backgroundColor: "#F9FAFB",
@@ -892,19 +917,18 @@ const [submittedPkg, setSubmittedPkg] = useState(null);
             I understand that this is an annual memorial restoration membership that will automatically renew each year using my payment method on file unless I cancel prior to the renewal date by contacting Lasting Legacy Cleaners or my participating memorial park.
           </span>
         </label>
-
-        <a
-         id="pay-now-btn"
-         href={BILLING_LINKS[submittedPkg]}
-         target="_blank"
-         rel="noopener noreferrer"
-         className="flex items-center justify-center gap-2 w-full h-12 rounded-lg text-sm font-semibold text-white mb-3 transition"
-         style={{ backgroundColor: "#1669A9", textDecoration: "none", opacity: "0.4", pointerEvents: "none" }}
-         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1E90CF")}
-         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1669A9")}
-       >
-         Pay Now →
-       </a>
+        <button
+  id="pay-now-btn"
+  type="button"
+  disabled={paySending}
+  onClick={sendPaymentRequest}
+  className="flex items-center justify-center gap-2 w-full h-12 rounded-lg text-sm font-semibold text-white mb-3 transition disabled:opacity-60"
+  style={{ backgroundColor: "#1669A9", opacity: "0.4", pointerEvents: "none" }}
+  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1E90CF")}
+  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1669A9")}
+>
+  {paySending ? "Sending…" : "Pay Now →"}
+</button>
        
        {/* Skip link */}
        <button
